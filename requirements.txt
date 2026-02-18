@@ -1,0 +1,6 @@
+# Local / demo dependencies (main.py + encoder.py)
+# Install with: pip install -r requirements.txt
+jieba
+pypinyin
+opencc
+dragonmapper
