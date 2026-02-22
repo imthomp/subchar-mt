@@ -18,11 +18,14 @@
 # BYU Supercomputer - Fine-tuning Experiment (Job Array)
 # Linguistically-Informed Low-Resource Machine Translation
 #
-# Submit with:   sbatch run_finetuning.sh
+# Submit with:   sbatch scripts/run_finetuning.sh
 # Array tasks run in parallel; each handles one seed.
 # After all tasks finish, aggregate results with:
-#   python aggregate_results.py
+#   python src/aggregate_results.py
 # ============================================================================
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
 
 echo "========================================================================"
 echo "Job started:  $(date)"
@@ -52,7 +55,7 @@ if [ ! -d "$VENV_DIR" ]; then
     pip install --upgrade pip --quiet
     pip install "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 --quiet
     pip install sacremoses sentencepiece 'accelerate>=1.1.0' unbabel-comet peft --quiet
-    pip install -r requirements-finetune.txt --quiet
+    pip install -r "$PROJECT_DIR/requirements-finetune.txt" --quiet
     echo "Virtual environment created and packages installed."
 else
     source "$VENV_DIR/bin/activate"
@@ -148,7 +151,7 @@ echo "========================================================================"
 echo ""
 
 LOG="logs/experiment_${SLURM_ARRAY_JOB_ID}_task${SLURM_ARRAY_TASK_ID}.log"
-python finetune_experiment.py 2>&1 | tee "$LOG"
+PYTHONPATH="$PROJECT_DIR/src" python src/finetune_experiment.py 2>&1 | tee "$LOG"
 
 EXIT_CODE=${PIPESTATUS[0]}
 if [ $EXIT_CODE -eq 0 ]; then

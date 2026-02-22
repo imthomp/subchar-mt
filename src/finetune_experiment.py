@@ -104,7 +104,7 @@ except Exception as e:
 # DATA LOADING
 # ============================================================================
 
-_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
 _IDS_PATH     = os.path.join(_DATA_DIR, 'ids.txt')
 _WUBI_PATH    = os.path.join(_DATA_DIR, 'wubi.txt')
 _CANGJIE_PATH = os.path.join(_DATA_DIR, 'cangjie.txt')
