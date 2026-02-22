@@ -54,11 +54,13 @@ class LinguisticEncoder:
         ids_path: Optional[str] = None,
         wubi_path: Optional[str] = None,
         stroke_path: Optional[str] = None,
+        cangjie_path: Optional[str] = None,
     ) -> None:
         self._cc_s2t = _opencc.OpenCC('s2t') if _opencc else None
         self.ids_map = self._load_ids_file(ids_path) if ids_path else self._mock_ids_data()
         self.wubi_map = self._load_kv_file(wubi_path) if wubi_path else self._mock_wubi_data()
         self.stroke_map = self._load_kv_file(stroke_path) if stroke_path else self._mock_stroke_data()
+        self.cangjie_map = self._load_kv_file(cangjie_path) if cangjie_path else self._mock_cangjie_data()
 
     # ------------------------------------------------------------------
     # Individual representation methods
@@ -114,6 +116,10 @@ class LinguisticEncoder:
         """Return list of Wubi key codes, one per character."""
         return [self.wubi_map.get(ch, '<UNK>') for ch in text]
 
+    def to_cangjie(self, text: str) -> List[str]:
+        """Return list of Cangjie key codes, one per character."""
+        return [self.cangjie_map.get(ch, '<UNK>') for ch in text]
+
     def to_strokes(self, text: str) -> List[str]:
         """Return flat list of stroke atoms across all characters."""
         strokes: List[str] = []
@@ -148,6 +154,8 @@ class LinguisticEncoder:
             return result
         if strategy == 'wubi':
             return self.to_wubi(text)
+        if strategy == 'cangjie':
+            return self.to_cangjie(text)
         if strategy == 'stroke_sequence':
             return self.to_strokes(text)
         raise ValueError(f"Unknown strategy: {strategy!r}")
@@ -203,6 +211,13 @@ class LinguisticEncoder:
         return {
             '机': 'sm', '器': 'kkk', '翻': 'tol', '译': 'ycf',
             '学': 'ip', '中': 'k', '文': 'yy',
+        }
+
+    def _mock_cangjie_data(self) -> Dict[str, str]:
+        # Cangjie codes from UNIHAN kCangjie field
+        return {
+            '机': 'DHN', '器': 'RRIKR', '翻': 'HWSMM', '译': 'IVEQ',
+            '学': 'FBND', '中': 'L', '文': 'YK',
         }
 
     def _mock_stroke_data(self) -> Dict[str, str]:

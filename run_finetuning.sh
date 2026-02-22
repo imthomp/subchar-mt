@@ -1,105 +1,167 @@
 #!/bin/bash
 
-#SBATCH --time=04:00:00              # Max time (4 hours - plenty of buffer)
-#SBATCH --nodes=1                     # Single node
-#SBATCH --ntasks=1                    # Single task
-#SBATCH --cpus-per-task=4             # 4 CPU cores
-#SBATCH --mem=32G                     # 32GB RAM
-#SBATCH --gres=gpu:1                  # 1 GPU (will likely get A100)
-#SBATCH --partition=gpu               # GPU partition
-#SBATCH --qos=gpu                     # GPU QoS
-#SBATCH --job-name=mt_finetune        # Job name
-#SBATCH --output=finetune_%j.out      # Output file (%j = job ID)
-#SBATCH --error=finetune_%j.err       # Error file
-#SBATCH --mail-type=END,FAIL          # Email on completion/failure
-#SBATCH --mail-user=YOUR_EMAIL@byu.edu  # Replace with your email!
+#SBATCH --time=08:00:00               # Per-task time (each task runs 1 seed)
+#SBATCH --array=0-2                   # 3 seeds: task 0→seed 42, 1→123, 2→456
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --gres=gpu:1
+#SBATCH --partition=cs
+#SBATCH --qos=cs
+#SBATCH --job-name=mt_finetune
+#SBATCH --output=finetune_%A_%a.out   # %A = array job ID, %a = task index
+#SBATCH --error=finetune_%A_%a.err
+#SBATCH --mail-type=NONE
 
 # ============================================================================
-# BYU Supercomputer - Fine-tuning Experiment
+# BYU Supercomputer - Fine-tuning Experiment (Job Array)
 # Linguistically-Informed Low-Resource Machine Translation
+#
+# Submit with:   sbatch run_finetuning.sh
+# Array tasks run in parallel; each handles one seed.
+# After all tasks finish, aggregate results with:
+#   python aggregate_results.py
 # ============================================================================
 
 echo "========================================================================"
-echo "Job started: $(date)"
-echo "Job ID: $SLURM_JOB_ID"
-echo "Node: $SLURM_NODELIST"
+echo "Job started:  $(date)"
+echo "Array job ID: $SLURM_ARRAY_JOB_ID"
+echo "Task index:   $SLURM_ARRAY_TASK_ID"
+echo "Node:         $SLURM_NODELIST"
 echo "========================================================================"
 
-# Print GPU info
 nvidia-smi
 
-# Load modules (adjust based on BYU supercomputer setup)
+# Load modules
 module purge
-module load python/3.10           # Or whatever Python version is available
-module load cuda/11.8             # Or latest CUDA
-module load cudnn/8.6             # CuDNN for GPU acceleration
-
-# Alternative if using conda:
-# module load miniconda3
-# conda activate your_env_name
+module load python/3.12
+module load cuda/12.8.1-jesavxf
+module load cudnn/8.9.7.29-12-3s4v3zq
 
 # Set up Python environment
 echo ""
 echo "Setting up Python environment..."
 echo "========================================================================"
 
-# Create virtual environment (first time only - comment out after first run)
-# python -m venv ~/venv_mt_finetune
-# source ~/venv_mt_finetune/bin/activate
-
-# Or activate existing environment
-source ~/venv_mt_finetune/bin/activate
-
-# Install required packages (first time only - comment out after first run)
-# pip install --upgrade pip
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-# pip install transformers datasets evaluate sacrebleu bert-score
-# pip install pypinyin zhon jieba pandas numpy matplotlib seaborn scipy
+VENV_DIR="$HOME/projects/hanzi-decomposition/.venv"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "Creating virtual environment $VENV_DIR ..."
+    python -m venv "$VENV_DIR"
+    source "$VENV_DIR/bin/activate"
+    pip install --upgrade pip --quiet
+    pip install "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 --quiet
+    pip install sacremoses sentencepiece 'accelerate>=1.1.0' unbabel-comet peft --quiet
+    pip install -r requirements-finetune.txt --quiet
+    echo "Virtual environment created and packages installed."
+else
+    source "$VENV_DIR/bin/activate"
+fi
 
 echo "Python: $(which python)"
 echo "Python version: $(python --version)"
 echo ""
 
-# Set environment variables for optimal GPU usage
+# Set environment variables
 export CUDA_VISIBLE_DEVICES=0
 export TOKENIZERS_PARALLELISM=false
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-# Create output directory
 mkdir -p models_supercomputer
 mkdir -p logs
 
-# Run the experiment
+# ============================================================================
+# PRE-CACHE HUGGINGFACE ASSETS
+# Compute nodes have no internet. This block checks the local HF cache and
+# downloads missing assets (requires network — run from a login node first
+# if this fails).
+# ============================================================================
 echo "========================================================================"
-echo "Starting fine-tuning experiment..."
+echo "Pre-caching HuggingFace assets..."
 echo "========================================================================"
-echo ""
 
-python finetune_experiment.py 2>&1 | tee logs/experiment_${SLURM_JOB_ID}.log
+# Keep offline mode on — compute nodes have no internet.
+# All assets must be pre-cached on a login node before submitting.
+# We just verify here; if anything is missing we fail fast.
+export HF_HUB_OFFLINE=1
 
-# Check exit status
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "========================================================================"
-    echo "✓ Experiment completed successfully!"
-    echo "========================================================================"
-else
-    echo ""
-    echo "========================================================================"
-    echo "✗ Experiment failed with error code $?"
-    echo "========================================================================"
+python - <<'CACHE_EOF'
+import sys, os
+
+# Enforce fully offline — no network calls, no retry noise
+os.environ['HF_HUB_OFFLINE']       = '1'
+os.environ['TRANSFORMERS_OFFLINE']  = '1'
+os.environ['HF_DATASETS_OFFLINE']   = '1'
+
+from datasets import load_dataset
+from transformers import MarianTokenizer, MarianMTModel, AutoTokenizer, AutoModelForSeq2SeqLM
+
+missing = []
+
+checks = [
+    ("WMT19 zh-en",          lambda: load_dataset('wmt19', 'zh-en', split='train[:1]')),
+    ("opus-mt-zh-en",        lambda: MarianTokenizer.from_pretrained('Helsinki-NLP/opus-mt-zh-en')),
+    ("NLLB-600M tokenizer",  lambda: AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M')),
+]
+
+for name, fn in checks:
+    print(f"  {name}... ", end='', flush=True)
+    try:
+        fn()
+        print("OK")
+    except Exception as e:
+        print("MISSING")
+        missing.append(name)
+
+# COMET is optional
+print("  COMET (wmt22-comet-da)... ", end='', flush=True)
+try:
+    from comet import download_model
+    download_model('Unbabel/wmt22-comet-da')
+    print("OK")
+except Exception as e:
+    print(f"not found (COMET scores will be skipped): {e}")
+
+if missing:
+    print(f"\nERROR: Missing assets: {missing}", file=sys.stderr)
+    print("Pre-cache on a login node:", file=sys.stderr)
+    print("  source ~/projects/hanzi-decomposition/.venv/bin/activate", file=sys.stderr)
+    print("  python -c \"from datasets import load_dataset; load_dataset('wmt19','zh-en',split='train')\"", file=sys.stderr)
+    print("  python -c \"from transformers import AutoTokenizer,AutoModelForSeq2SeqLM; AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M'); AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')\"", file=sys.stderr)
+    sys.exit(1)
+
+print("All assets verified.")
+CACHE_EOF
+
+if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Print results summary
 echo ""
+
+# ============================================================================
+# RUN EXPERIMENT (task index selects the seed)
+# ============================================================================
 echo "========================================================================"
-echo "FINAL RESULTS:"
+echo "Starting experiment (array task $SLURM_ARRAY_TASK_ID)..."
 echo "========================================================================"
-if [ -f finetuned_results_FINAL.csv ]; then
-    cat finetuned_results_FINAL.csv
+echo ""
+
+LOG="logs/experiment_${SLURM_ARRAY_JOB_ID}_task${SLURM_ARRAY_TASK_ID}.log"
+python finetune_experiment.py 2>&1 | tee "$LOG"
+
+EXIT_CODE=${PIPESTATUS[0]}
+if [ $EXIT_CODE -eq 0 ]; then
+    echo ""
+    echo "========================================================================"
+    echo "✓ Task $SLURM_ARRAY_TASK_ID completed successfully!"
+    echo "========================================================================"
 else
-    echo "Warning: finetuned_results_FINAL.csv not found"
+    echo ""
+    echo "========================================================================"
+    echo "✗ Task $SLURM_ARRAY_TASK_ID failed (exit code $EXIT_CODE)"
+    echo "========================================================================"
+    exit $EXIT_CODE
 fi
 
 echo ""
@@ -108,5 +170,4 @@ echo "Job finished: $(date)"
 echo "Total runtime: $SECONDS seconds"
 echo "========================================================================"
 
-# Deactivate virtual environment
 deactivate
