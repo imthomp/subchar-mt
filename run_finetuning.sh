@@ -10,8 +10,8 @@
 #SBATCH --partition=cs
 #SBATCH --qos=cs
 #SBATCH --job-name=mt_finetune
-#SBATCH --output=finetune_%A_%a.out   # %A = array job ID, %a = task index
-#SBATCH --error=finetune_%A_%a.err
+#SBATCH --output=logs/finetune_%A_%a.out   # %A = array job ID, %a = task index
+#SBATCH --error=logs/finetune_%A_%a.err
 #SBATCH --mail-type=NONE
 
 # ============================================================================
@@ -44,7 +44,7 @@ echo ""
 echo "Setting up Python environment..."
 echo "========================================================================"
 
-VENV_DIR="$HOME/projects/hanzi-decomposition/.venv"
+VENV_DIR="$HOME/projects/subchar-mt/.venv"
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment $VENV_DIR ..."
     python -m venv "$VENV_DIR"
@@ -125,7 +125,7 @@ except Exception as e:
 if missing:
     print(f"\nERROR: Missing assets: {missing}", file=sys.stderr)
     print("Pre-cache on a login node:", file=sys.stderr)
-    print("  source ~/projects/hanzi-decomposition/.venv/bin/activate", file=sys.stderr)
+    print("  source ~/projects/subchar-mt/.venv/bin/activate", file=sys.stderr)
     print("  python -c \"from datasets import load_dataset; load_dataset('wmt19','zh-en',split='train')\"", file=sys.stderr)
     print("  python -c \"from transformers import AutoTokenizer,AutoModelForSeq2SeqLM; AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M'); AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')\"", file=sys.stderr)
     sys.exit(1)
