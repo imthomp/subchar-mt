@@ -18,10 +18,9 @@ This project tests six input representations — characters, morphemes, pinyin, 
 ## Setup
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-pip install sacremoses sentencepiece accelerate unbabel-comet peft
-pip install -r requirements-finetune.txt
+uv venv && source .venv/bin/activate
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+uv pip install -r requirements.txt
 ```
 
 Pre-cache HuggingFace assets on a login node before submitting:
@@ -33,8 +32,8 @@ python -c "from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; AutoTo
 ## Running
 
 ```bash
-sbatch run_finetuning.sh          # submits a 3-task job array (one per seed)
-python aggregate_results.py       # after all tasks finish
+sbatch scripts/run_finetuning.sh       # submits a 3-task job array (one per seed)
+python src/aggregate_results.py        # after all tasks finish
 ```
 
 ## Data
@@ -45,7 +44,7 @@ python aggregate_results.py       # after all tasks finish
 
 ## Key files
 
-- `encoder.py` — `LinguisticEncoder` class (all representations)
-- `finetune_experiment.py` — main experiment script
-- `run_finetuning.sh` — SLURM job array submission script
-- `aggregate_results.py` — combines per-seed CSVs into summary tables
+- `src/encoder.py` — `LinguisticEncoder` class (all representations)
+- `src/finetune_experiment.py` — main experiment script
+- `scripts/run_finetuning.sh` — SLURM job array submission script
+- `src/aggregate_results.py` — combines per-seed CSVs into summary tables

@@ -47,15 +47,15 @@ echo ""
 echo "Setting up Python environment..."
 echo "========================================================================"
 
-VENV_DIR="$HOME/projects/subchar-mt/.venv"
+VENV_DIR="$PROJECT_DIR/.venv"
+export PATH="$HOME/.local/bin:$PATH"   # ensure uv is on PATH
+
 if [ ! -d "$VENV_DIR" ]; then
-    echo "Creating virtual environment $VENV_DIR ..."
-    python -m venv "$VENV_DIR"
+    echo "Creating virtual environment with uv..."
+    uv venv "$VENV_DIR" --python python3.12
     source "$VENV_DIR/bin/activate"
-    pip install --upgrade pip --quiet
-    pip install "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 --quiet
-    pip install sacremoses sentencepiece 'accelerate>=1.1.0' unbabel-comet peft --quiet
-    pip install -r "$PROJECT_DIR/requirements-finetune.txt" --quiet
+    uv pip install "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 --quiet
+    uv pip install -r "$PROJECT_DIR/requirements.txt" --quiet
     echo "Virtual environment created and packages installed."
 else
     source "$VENV_DIR/bin/activate"
@@ -128,7 +128,7 @@ except Exception as e:
 if missing:
     print(f"\nERROR: Missing assets: {missing}", file=sys.stderr)
     print("Pre-cache on a login node:", file=sys.stderr)
-    print("  source ~/projects/subchar-mt/.venv/bin/activate", file=sys.stderr)
+    print("  source ~/projects/subchar-mt/.venv/bin/activate  # or: uv run ...", file=sys.stderr)
     print("  python -c \"from datasets import load_dataset; load_dataset('wmt19','zh-en',split='train')\"", file=sys.stderr)
     print("  python -c \"from transformers import AutoTokenizer,AutoModelForSeq2SeqLM; AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M'); AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')\"", file=sys.stderr)
     sys.exit(1)
