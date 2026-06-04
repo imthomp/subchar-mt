@@ -33,3 +33,16 @@ Thumbs.db
 
 # Environment variables
 .env
+models_v3/
+models_v4/
+models_zhja/
+*.npz
+results/predictions/
+results/predictions_v3/
+results/predictions_v4/
+results/predictions_zhja/
+logs/
+v3_results_intermediate*.csv
+v4_results_intermediate*.csv
+zhja_results_intermediate*.csv
+core.*

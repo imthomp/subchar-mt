@@ -6,6 +6,8 @@ Used by both main.py (demo) and finetune_experiment.py (supercomputer run).
 
 from __future__ import annotations
 
+import hashlib
+import struct
 from typing import Dict, List, Optional
 
 import jieba
@@ -20,6 +22,11 @@ try:
     from dragonmapper import hanzi as _dragonmapper_hanzi
 except ImportError:
     _dragonmapper_hanzi = None
+
+try:
+    import sentencepiece as _spm
+except ImportError:
+    _spm = None
 
 
 class LinguisticEncoder:
@@ -55,12 +62,25 @@ class LinguisticEncoder:
         wubi_path: Optional[str] = None,
         stroke_path: Optional[str] = None,
         cangjie_path: Optional[str] = None,
+        sp_model_path: Optional[str] = None,
+        random_index_seed: int = 42,
     ) -> None:
         self._cc_s2t = _opencc.OpenCC('s2t') if _opencc else None
         self.ids_map = self._load_ids_file(ids_path) if ids_path else self._mock_ids_data()
         self.wubi_map = self._load_kv_file(wubi_path) if wubi_path else self._mock_wubi_data()
         self.stroke_map = self._load_kv_file(stroke_path) if stroke_path else self._mock_stroke_data()
         self.cangjie_map = self._load_kv_file(cangjie_path) if cangjie_path else self._mock_cangjie_data()
+
+        # SentencePiece model (optional — needed for to_sentencepiece())
+        self._sp_model: Optional[object] = None
+        if sp_model_path and _spm is not None:
+            self._sp_model = _spm.SentencePieceProcessor()
+            self._sp_model.Load(sp_model_path)
+
+        # Random-index mapping: deterministic per-character index derived from a seeded hash.
+        # Uses a deterministic hash so the mapping is stable across processes without storing
+        # a full vocab table — any character maps to a consistent 4-digit token.
+        self._ri_seed = random_index_seed
 
     # ------------------------------------------------------------------
     # Individual representation methods
@@ -127,6 +147,91 @@ class LinguisticEncoder:
             strokes.extend(self.stroke_map.get(ch, ''))
         return strokes
 
+    def to_bytes(self, text: str) -> str:
+        """
+        Encode each character as its UTF-8 bytes in lowercase hex, space-joined.
+        Non-linguistic control: captures character identity via encoding, not semantics.
+        E.g. 中 → 'e4 b8 ad'
+        """
+        tokens: List[str] = []
+        for ch in text:
+            tokens.extend(f"{b:02x}" for b in ch.encode("utf-8"))
+        return " ".join(tokens)
+
+    def to_random_index(self, text: str) -> str:
+        """
+        Replace each character with a deterministic pseudo-random 4-digit token.
+        Non-linguistic control from Si et al. (2023): if this matches linguistic encodings,
+        the benefit is structural (sequence length / BPE alignment), not semantic.
+
+        The index is derived via a seeded hash of (seed, char) so it is:
+          - consistent across calls / processes (same char always maps to same token)
+          - different from linguistic indices (not ord(), not stroke order)
+          - stable when the encoder is reconstructed with the same seed
+        """
+        tokens: List[str] = []
+        for ch in text:
+            # Mix seed with the codepoint to get a 16-bit index in 0000–9999
+            raw = struct.pack(">II", self._ri_seed, ord(ch))
+            h = int(hashlib.sha256(raw).hexdigest()[:4], 16)  # 0–65535
+            tokens.append(f"{h % 10000:04d}")
+        return " ".join(tokens)
+
+    def to_sentencepiece(self, text: str) -> str:
+        """
+        Segment Chinese text with a trained SentencePiece unigram model.
+        Data-driven subword baseline: contrasts jieba's dictionary-based morphemes
+        with a purely statistical segmentation.
+
+        Requires a pre-trained model loaded via sp_model_path at construction time.
+        Falls back to baseline (raw characters) if no model is loaded.
+        """
+        if self._sp_model is None:
+            return text
+        pieces = self._sp_model.EncodeAsPieces(text)
+        # Strip the leading ▁ (U+2581) word-boundary marker that SentencePiece inserts
+        return " ".join(p.lstrip("▁") or p for p in pieces)
+
+    def to_selective_decomp(
+        self,
+        text: str,
+        tokenizer_vocab: set,
+        decomp_method: str = 'radicals',
+    ) -> str:
+        """
+        Inference-only selective decomposition (Saunders, Feely & Byrne, WAT 2020).
+
+        Only decomposes characters that are OUT-OF-VOCABULARY for the model's tokenizer
+        (i.e., would be split into byte-fallback or <unk> tokens). Known characters are
+        kept as-is; unknown ones are expanded to their IDS radical components.
+
+        This is the "principled fix" the roadmap identifies: decompose when it helps
+        (unknown chars), leave alone when it doesn't (known chars).
+
+        Parameters
+        ----------
+        text : str
+            Raw Chinese source text.
+        tokenizer_vocab : set
+            Set of token strings known to the model (from tokenizer.get_vocab()).
+        decomp_method : str
+            'radicals' (IDS components) or 'morphemes' (jieba fallback to chars).
+        """
+        tokens: List[str] = []
+        for ch in text:
+            if ch in tokenizer_vocab:
+                tokens.append(ch)
+            else:
+                if decomp_method == 'radicals':
+                    decomp = self.ids_map.get(ch, ch)
+                    components = [c for c in decomp if c not in self._IDS_LAYOUT_MARKERS]
+                    tokens.extend(components if components else [ch])
+                else:
+                    # morpheme fallback: try jieba on the char, else keep as-is
+                    segs = list(jieba.cut(ch, cut_all=False))
+                    tokens.extend(segs if segs else [ch])
+        return ' '.join(tokens)
+
     # ------------------------------------------------------------------
     # Strategy dispatch (used by main.py demo)
     # ------------------------------------------------------------------
@@ -158,6 +263,12 @@ class LinguisticEncoder:
             return self.to_cangjie(text)
         if strategy == 'stroke_sequence':
             return self.to_strokes(text)
+        if strategy == 'byte':
+            return self.to_bytes(text).split()
+        if strategy == 'random_index':
+            return self.to_random_index(text).split()
+        if strategy == 'sentencepiece':
+            return self.to_sentencepiece(text).split()
         raise ValueError(f"Unknown strategy: {strategy!r}")
 
     # ------------------------------------------------------------------

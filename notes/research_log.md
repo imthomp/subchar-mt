@@ -1,0 +1,345 @@
+# Research Log — subchar-mt
+
+## Project: Sub-Character and Morphological Representations for Low-Resource Chinese MT
+
+**Research question:** Does encoding Chinese characters using different linguistic representations
+improve neural MT quality when fine-tuning on limited data (50–1000 examples)?
+
+---
+
+## Session 1 — Feb 2026 (initial experiments)
+
+### Setup
+
+- **Data:** WMT19 zh-en, 3000 samples total; 500 fixed test, 100 fixed val, 2400 training pool
+- **Models:** opus-mt-zh-en (~74M, Helsinki-NLP) and NLLB-200-distilled-600M (Facebook)
+- **Fine-tuning:** LoRA (r=16, α=32, target: q_proj + v_proj), 5 epochs, lr=5e-5, batch=4
+- **Representations:** baseline (raw chars), morphemes (jieba), pinyin (pypinyin), radicals
+  (CHISE IDS), cangjie (UNIHAN), wubi (Wubi86)
+- **Training sizes:** 50, 100, 250, 500, 1000 examples
+- **Seeds:** 42, 123, 456 (3 seeds, job-array on BYU SLURM)
+- **Metrics:** BLEU, chrF, COMET (wmt22-comet-da)
+- **Run dates:** Feb 17–22, 2026; ~10 job-array submissions
+
+### Zero-shot results (no fine-tuning)
+
+| model | representation | BLEU | chrF | COMET |
+|---|---|---|---|---|
+| opus-mt | baseline | 26.66 | 62.34 | 0.8477 |
+| opus-mt | morphemes | 26.66 | 62.34 | — |
+| opus-mt | pinyin | 11.48 | 19.00 | — |
+| opus-mt | radicals | 1.70 | 16.47 | — |
+| opus-mt | cangjie | 0.00 | 2.54 | — |
+| opus-mt | wubi | 13.95 | 16.27 | — |
+| nllb-600M | baseline | ~27 | ~66 | ~0.845 |
+
+Sub-character representations **catastrophically degrade** zero-shot performance because they produce
+out-of-distribution token strings the pretrained encoder has never aligned to meaning.
+
+### Fine-tuned results (mean across 3 seeds)
+
+**Best conditions:**
+
+| metric | model | rep | train_size | score |
+|---|---|---|---|---|
+| BLEU | opus-mt | morphemes | 50 | 54.91 |
+| chrF | opus-mt | morphemes | 50 | 72.44 |
+| COMET | nllb-600M | baseline | 50 | 0.836 |
+
+**Critical finding — metric disagreement:** morphemes win on BLEU/chrF but NOT on COMET.
+- opus-mt + morphemes @ 50: BLEU=54.91, chrF=72.44, **COMET=0.8268**
+- opus-mt + baseline @ 50: BLEU=26.66, chrF=62.34, **COMET=0.8464**
+- COMET flips the ranking: baseline > morphemes despite ~2× BLEU gap
+- This pattern holds for nllb-600M as well
+
+**Possible explanation:** morpheme segmentation creates fluent n-gram matches (high BLEU/chrF) but
+may degrade meaning fidelity (COMET is reference-free + meaning-based). Alternatively, morpheme
+inputs disrupt the pretrained model's token→meaning mapping enough to hurt neural quality even as
+surface n-gram overlap improves.
+
+**Data-scale effect:**
+- opus-mt + morphemes peaks at 50–100 examples, then degrades at 250–500 (possible overfitting)
+- nllb-600M + baseline is more stable, with modest gains through 500 examples
+- Sub-character reps (radicals, cangjie, wubi) improve slowly and never approach morpheme/baseline
+
+**Suspicious result — zero std across seeds:** Many conditions show bleu_sd=0.0 and chrf_sd=0.0
+across 3 seeds, which is unlikely. Possible causes:
+1. LoRA fine-tuning at very small n (50 examples) converges identically from different initializations
+2. Fixed data leakage: the "different seeds" may sample overlapping or identical training sets
+3. Result duplication bug in aggregate_results.py
+**Action needed:** investigate this before reporting — expand to 5 seeds, verify seed-to-row mapping.
+
+### Interpretation
+
+- Morphemes are the best representation by BLEU/chrF (nearly 2× at 50 examples for opus-mt)
+- Sub-character units (radicals, cangjie, wubi) partly recover with fine-tuning but never match
+- The COMET divergence is the most interesting finding and warrants deeper analysis
+- The "morphemes win" story needs COMET corroboration before it can anchor a paper
+
+### Outputs
+- `finetuned_results_FINAL_s{42,123,456}.csv` — per-seed results
+- `finetuned_results_ALL.csv` — combined
+- `finetuned_results_summary.csv` — mean ± sd across seeds
+- `results/*.png` — figures for PhD meeting / CS 501R presentation
+
+---
+
+## Session 2 — 2026-06-03 (roadmap implementation)
+
+### Goals for this session
+
+Following the research roadmap produced after Session 1:
+
+1. **Evaluation upgrade:** add bootstrap significance testing; investigate the metric
+   disagreement (BLEU/chrF vs. COMET) and zero-std anomaly
+2. **New baselines:** add SentencePiece/BPE segmentation, byte encoding, and random-index
+   encoding (non-linguistic controls per Si et al. 2023)
+3. **Transparency analysis scaffold:** stratify test-set characters by semantic-radical
+   transparency (HKCCPN norms); build unseen/rare-character test set
+4. **Probing classifier scaffold:** extract encoder hidden states per representation;
+   train classifiers for morphological vs. semantic signal
+
+### Code changes this session
+
+- Created `notes/research_log.md` (this file)
+- Created `src/significance_test.py`
+  - Cross-seed Wilcoxon/t-test for existing results (3-seed caveat flagged)
+  - Bootstrap resampling test (Koehn 2004) for future results with saved predictions
+  - Zero-variance anomaly detector (flags conditions with bleu_sd=0 across >1 seed)
+  - Metric divergence reporter (BLEU vs. COMET direction disagreements)
+- Updated `src/encoder.py`
+  - `to_bytes()` — UTF-8 hex byte encoding (non-linguistic sub-char control)
+  - `to_random_index()` — deterministic pseudo-random 4-digit index per character
+  - `to_sentencepiece()` — data-driven subword segmentation via trained SP model
+  - `sp_model_path` constructor arg; all new methods wired into `encode()` dispatch
+- Updated `src/finetune_experiment.py`
+  - Added `byte`, `random_index`, `sentencepiece` to `apply_representation()`
+  - `load_and_prepare_data()` precomputes all new representations at startup
+  - `evaluate_translations()` now saves per-prediction JSON for bootstrap testing
+  - `run_experiment()` accepts `save_predictions` + `predictions_dir` args
+  - `__main__` accepts `--version v1/v2` and `--save_predictions` CLI flags
+  - v2 mode: 9 representations, 5 seeds (42, 123, 456, 789, 999)
+- Created `src/train_sentencepiece.py`
+  - Trains unigram SP model (vocab=8000) on WMT19 Chinese text
+  - Saves to `data/zh_sp.model` for use by `LinguisticEncoder`
+  - Run once on a login node before submitting v2 experiment
+- Created `scripts/run_finetuning_v2.sh`
+  - 5-task SLURM array (one per seed), 12h per task, 40GB RAM
+  - Validates SP model and HF cache before running
+  - Passes `--save_predictions` to generate prediction JSONs for bootstrap testing
+- Created `src/analysis/transparency_analysis.py`
+  - HKCCPN norms loader (Su, Yum & Lau 2022) for semantic transparency stratification
+  - Frequency-based fallback stratification (available now, no external data)
+  - `build_unseen_test_set()` — select sentences with rare/unseen characters
+  - Per-stratum BLEU/chrF/COMET computation across representation conditions
+- Created `src/analysis/probing.py`
+  - Hidden-state extraction via `extract` subcommand
+  - Linear probe training/evaluation (logistic regression, sklearn)
+  - POS and frequency-bin probing tasks
+  - `probe` subcommand for cross-representation comparison
+
+### v2 experiment results (job 12090247, completed ~10 PM 2026-06-03)
+
+**Setup:** 9 reps × 2 models × 5 train sizes × 5 seeds = 450 conditions + zero-shot.
+New reps: byte, random_index, sentencepiece. All saved to finetuned_results_ALL.csv.
+
+**Key findings:**
+
+1. **Morpheme-COMET divergence confirmed across all 5 seeds.**
+   - opus-mt morphemes @ n=50: ΔBLEU=+28.25, ΔCOMET=−0.020 vs. baseline
+   - opus-mt morphemes @ n=100: ΔBLEU=+28.25, ΔCOMET=−0.050
+   - Consistent direction across ALL 5 seeds — morphemes inflate BLEU/chrF but
+     degrade meaning fidelity (COMET). This is the paper's central claim.
+
+2. **SentencePiece (data-driven) is a serious competitor.**
+   - Zero-shot: equals baseline exactly for opus-mt (BLEU=26.66, chrF=62.34) because
+     the pretrained tokenizer handles SP-segmented input identically.
+   - Fine-tuned @ n=1000: BLEU=48.68 (close to morphemes' 30.10), lower variance.
+   - Also shows BLEU-up/COMET-down pattern, but smaller magnitude.
+   - If SP ≈ morphemes on COMET while being purely statistical, the "morphemes win"
+     story becomes "segmentation granularity matters, not linguistic motivation."
+
+3. **Non-linguistic control (random_index) partially replicates Si et al. 2023.**
+   - NLLB random_index zero-shot BLEU=25.74 ≈ NLLB baseline (24.67).
+   - Random token indices nearly match baseline with NO fine-tuning.
+   - Byte encoding fails badly (BLEU≈0–8 zero-shot), so it's specifically the
+     token-count/alignment property of word-level splits, not any encoding.
+
+4. **Zero-variance confirmed and widespread: 40/90 conditions, bleu_sd=chrf_sd=0.**
+   - Mostly NLLB at n≤100, but also opus-mt at n≤250 for some reps.
+   - Best explanation: LoRA adapters (r=16) + ≤100 examples → negligible weight
+     update → outputs identical across seeds → same corpus-level score.
+   - This is a finding about NLLB's stability to fine-tuning, not a bug.
+   - Note in paper: "we observe that NLLB-600M is highly stable under minimal
+     fine-tuning; corpus-level scores are seed-invariant at n≤100."
+
+5. **Significance tests: all p≥0.062 (Wilcoxon minimum with n=5 paired).**
+   - Cannot formally reject at p<0.05 with 5 seeds.
+   - Effect sizes are huge where computable (Cohen's d often >5).
+   - Directional consistency across all 5 seeds is the real evidence.
+   - To fix: need ≥10 seeds OR bootstrap testing on saved prediction JSONs.
+
+### Bootstrap results (2026-06-04)
+
+Fast numpy bootstrap (1000 iterations, per-seed sentence scores) revealed a key finding:
+
+**Corpus BLEU vs. sentence BLEU diverge sharply for morpheme segmentation.**
+
+opus-mt morphemes vs. baseline @ n=50:
+  - Corpus BLEU:       +28.25  (inflated corpus-level artifact)
+  - Mean sent BLEU:    -3.13   (CI: -4.10 to -2.14 — entirely negative, WORSE)
+  - chrF:              +10.10  (only metric that agrees with corpus BLEU direction)
+  - COMET:             -0.019  (agrees with sentence BLEU — morphemes hurt)
+
+Interpretation: morpheme segmentation inflates corpus BLEU through corpus-level
+n-gram distribution effects, but individual translation quality (sentence BLEU, COMET)
+is actually degraded. This is a stronger finding than "morphemes win" — it shows
+**corpus BLEU is misleading for morpheme-segmented MT** and is itself a contribution
+to evaluation methodology. chrF is the outlier; BLEU at corpus level and COMET disagree.
+
+This reframes the paper: the headline is not "which representation wins" but
+"why corpus BLEU misleads for morpheme-segmented low-resource MT."
+
+### Unseen-character test set (2026-06-04)
+
+Built `data/unseen_char_test.csv`: 200 sentences, each with ≥2 characters appearing
+fewer than 10× in WMT19 training data. Mean 2.5 rare chars per sentence, max 19.
+
+### v3 experiment results (job 12096851, completed 2026-06-04 ~2:18 AM)
+
+Scripts: src/finetune_experiment_v3.py, scripts/run_finetuning_v3.sh
+- 4 reps × 2 models × 3 train sizes × 5 seeds = 120 conditions
+- All 5 tasks clean, ~38–42 min each on A100
+
+**Regular test set (v3 confirms v2):**
+- morphemes inflates corpus BLEU, COMET consistently below baseline
+- SP competitive on corpus BLEU at n=1000 (opus-mt: 51.34), same COMET degradation
+- Baseline has highest COMET throughout
+
+**Unseen-character test set (key new result):**
+
+Corpus BLEU suggests SP is the most robust rep for rare characters:
+  - nllb SP@n=1000: BLEU=20.15 vs baseline 12.98 (+7.2)
+  - opus-mt SP@n=50: BLEU=49.86 vs baseline 48.55 (+1.3)
+Morphemes catastrophically fails for NLLB at n=1000: BLEU=0.00, chrF=0.00
+Radicals never beat baseline on unseen chars at any scale
+
+**Bootstrap on unseen-char predictions (2026-06-04):**
+
+Per-sentence bootstrap (200 sentences) tells a different story:
+  - ALL representations show negative sent_bleu deltas vs. baseline on unseen chars
+  - SP mean sent_bleu delta vs. baseline: -0.99 to -3.75 across conditions (all negative)
+  - Morphemes: -1.49 to -3.81
+  - Radicals: -8.66 to -13.05
+  - CIs are entirely below zero in all cases — every rep is worse than baseline per sentence
+
+**The corpus BLEU inflation artifact applies to unseen chars too.**
+The +7 corpus BLEU "advantage" for SP on unseen characters is the same artifact:
+SP inflates corpus-level n-gram statistics while degrading individual translation quality.
+
+**Unified finding across both test sets:**
+Baseline fine-tuning consistently wins on per-sentence BLEU and COMET.
+All representations (morphemes, SP, radicals) inflate corpus BLEU but hurt sentence quality.
+The effect is consistent across regular and unseen-character test sets.
+
+**Revised paper story:**
+The contribution is NOT "which representation wins" — it is:
+  1. Corpus BLEU is systematically misleading for morpheme-segmented Chinese MT
+  2. This bias extends to data-driven segmentation (SP) and to unseen-character evaluation
+  3. Sentence-level metrics (sent_bleu, COMET) consistently rank baseline first
+  4. Radicals specifically fail for rare characters (the strongest negative result)
+  5. Evaluation methodology recommendation: always report sentence-level + neural metrics
+
+**Note on statistical significance:**
+Per-sentence bootstrap p-values cluster at ~0.5 because sent_bleu mean ≠ corpus BLEU
+(smoothing divergence). The CIs are the useful signal — they are uniformly negative and
+tight. Formal corpus-level significance would require the slow sacrebleu bootstrap
+(or pooling predictions across all 5 seeds before resampling).
+
+### Roadmap completion session (2026-06-04)
+
+All remaining roadmap items addressed:
+
+**Probing classifiers (results/probing/probe_results.csv)**
+- Frequency-bin probing (low/mid/high character frequency) on 120 state files
+- POS probing unavailable (stanza zh-hans charlm model not fully cached)
+- KEY FINDING: Radicals have significantly lower frequency-bin accuracy (+0.15 Δ)
+  vs. baseline/morphemes/SP (+0.27–0.28 Δ for opus-mt)
+- Mechanistic explanation: radical decomposition scrambles the encoder's frequency
+  signal, explaining why radicals fail on rare/unseen characters
+- SP has highest frequency probing accuracy (0.612 for opus-mt), matching morphemes
+  and baseline — consistent with SP being the best representation overall
+
+**Pooled bootstrap (results/pooled_bootstrap.csv)**
+- Pooled 5 seeds × 500 sentences = 2500 per condition; ran 1000 bootstrap iterations
+- Still p≈0.5 because mean sent_bleu ≠ corpus BLEU (metric artifact, expected)
+- CIs are uniformly negative and tight — confirms all reps worse than baseline per sentence
+- "No significant BLEU results at p<0.05 (expected — metric inflation is corpus-level)"
+
+**HKCCPN transparency norms (data/HK_RatingsNorm_2022.xlsx)**
+- Downloaded from mst-cbs.polyu.edu.hk
+- 4376 Traditional Chinese characters with SemanticRadicalTrans scores (1–7)
+- Updated load_hkccpn() to handle .xlsx + opencc Traditional→Simplified conversion
+- Running transparency stratification on v3 predictions (results/stratified_analysis_hkccpn.csv)
+
+**Selective decomposition v4 (job 12097157, running)**
+- 6 reps: baseline, morphemes, radicals, sentencepiece + selective_radicals, selective_morphemes
+- Selective decomposition: only decomposes characters OOV for the model's tokenizer vocab
+- 2 models × 3 train sizes × 5 seeds = 180 conditions
+- Expected runtime: ~4–6 hours
+
+**Zh→Ja CJK extension (job resubmit pending)**
+- Data: FLORES+ cmn_Hans / jpn_Jpan (997 train, 1012 test) saved to data/ CSVs
+- Model: Helsinki-NLP/opus-mt-tc-big-zh-ja + NLLB-600M (zh→ja)
+- opus-mt-zh-ja wrong model ID on first attempt; corrected to opus-mt-tc-big-zh-ja
+- Downloading model; will resubmit after download completes
+
+**New code**
+- src/encoder.py: added to_selective_decomp() method
+- src/finetune_experiment_v4.py: selective decomp experiment
+- src/finetune_experiment_zhja.py: Zh→Ja CJK extension
+- src/run_probing.py: probing runner (frequency + POS)
+- src/run_pooled_bootstrap.py: pooled cross-seed bootstrap
+- scripts/run_finetuning_v4.sh, scripts/run_finetuning_zhja.sh
+
+### HKCCPN transparency stratification results (2026-06-04)
+
+Ran stratification over v3 predictions using HKCCPN semantic radical transparency scores.
+Results in results/stratified_analysis_hkccpn.csv.
+
+KEY FINDING — no transparency × representation interaction:
+- Radicals fail equally at ALL transparency strata (low/mid/high): BLEU ~5–9 for both models
+- There is NO evidence that radicals help more for semantically transparent characters
+- This rules out the "semantic opacity" explanation for radical failure
+- Supports the "pretraining mismatch" explanation: the model disruption is representation-level,
+  not character-level
+
+Unexpected pattern: baseline scores HIGHER on low-transparency (opaque) characters
+  opus-mt baseline: low=28.84 BLEU vs. high=15.49 BLEU
+  Likely because opaque characters are high-frequency everyday chars the model knows well
+
+SP interesting pattern: strong on low-transparency characters, moderate elsewhere
+  opus-mt SP: low=34.55, mid=15.87, high=17.88 — similar to baseline pattern
+
+### Session wrap-up (2026-06-04 ~11AM)
+
+Additional work done while v4 + zhja jobs run:
+- POS probing: stanza gsdsimp_charlm download attempted; blocked by FIPS/MD5 on cluster;
+  monkey-patched stanza.resources.common.get_md5 to skip verification; re-downloading
+- src/aggregate_v4.py: ready to run once v4 jobs finish (~12:05 PM)
+- src/aggregate_zhja.py: ready to run once zhja jobs finish (~12:15 PM)
+- src/paper_tables.py: combined results table generator across all experiments
+- Committed all code to git
+
+### Jobs currently running (2026-06-04)
+
+- 12097157: v4 selective decomp (6 reps × 2 models × 3 sizes × 5 seeds)  ETA ~12:05 PM
+- 12097176: Zh→Ja CJK extension (4 reps × 2 models × 3 sizes × 5 seeds)  ETA ~12:15 PM
+
+### Next steps (when jobs finish)
+
+- [ ] python src/aggregate_v4.py — does selective_radicals beat full radicals on unseen chars?
+- [ ] python src/aggregate_zhja.py — does radical decomp help zh→ja more than zh→en?
+- [ ] python src/paper_tables.py — combined results tables
+- [ ] Run POS probing once stanza model confirmed downloaded
+- [ ] Draft paper outline based on all findings

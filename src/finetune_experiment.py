@@ -104,17 +104,19 @@ except Exception as e:
 # DATA LOADING
 # ============================================================================
 
-_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+_DATA_DIR     = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
 _IDS_PATH     = os.path.join(_DATA_DIR, 'ids.txt')
 _WUBI_PATH    = os.path.join(_DATA_DIR, 'wubi.txt')
 _CANGJIE_PATH = os.path.join(_DATA_DIR, 'cangjie.txt')
+_SP_MODEL     = os.path.join(_DATA_DIR, 'zh_sp.model')
 
 
 def _make_encoder():
     return LinguisticEncoder(
-        ids_path     = _IDS_PATH     if os.path.exists(_IDS_PATH)     else None,
-        wubi_path    = _WUBI_PATH    if os.path.exists(_WUBI_PATH)    else None,
-        cangjie_path = _CANGJIE_PATH if os.path.exists(_CANGJIE_PATH) else None,
+        ids_path       = _IDS_PATH     if os.path.exists(_IDS_PATH)     else None,
+        wubi_path      = _WUBI_PATH    if os.path.exists(_WUBI_PATH)    else None,
+        cangjie_path   = _CANGJIE_PATH if os.path.exists(_CANGJIE_PATH) else None,
+        sp_model_path  = _SP_MODEL     if os.path.exists(_SP_MODEL)     else None,
     )
 
 
@@ -136,6 +138,14 @@ def load_and_prepare_data(max_samples=3000):
     df['radicals']      = df['chinese'].apply(enc.to_radicals)
     df['wubi']          = df['chinese'].apply(lambda x: ' '.join(enc.to_wubi(x)))
     df['cangjie']       = df['chinese'].apply(lambda x: ' '.join(enc.to_cangjie(x)))
+    df['byte']          = df['chinese'].apply(enc.to_bytes)
+    df['random_index']  = df['chinese'].apply(enc.to_random_index)
+    if enc._sp_model is not None:
+        df['sentencepiece'] = df['chinese'].apply(enc.to_sentencepiece)
+        print("  ✓ SentencePiece model loaded")
+    else:
+        df['sentencepiece'] = df['chinese']  # fallback: identical to baseline
+        print("  ⚠ SentencePiece model not found — 'sentencepiece' will equal baseline")
 
     print(f"✓ {len(df)} examples prepared\n")
     return df
@@ -188,6 +198,12 @@ def apply_representation(texts, representation):
         return [' '.join(_ENCODER.to_wubi(t)) for t in texts]
     elif representation == 'cangjie':
         return [' '.join(_ENCODER.to_cangjie(t)) for t in texts]
+    elif representation == 'byte':
+        return [_ENCODER.to_bytes(t) for t in texts]
+    elif representation == 'random_index':
+        return [_ENCODER.to_random_index(t) for t in texts]
+    elif representation == 'sentencepiece':
+        return [_ENCODER.to_sentencepiece(t) for t in texts]
     return texts
 
 
@@ -225,7 +241,7 @@ def translate_with_model(model, tokenizer, source_texts, model_key, max_length=1
 # EVALUATION
 # ============================================================================
 
-def evaluate_translations(predictions, references, sources=None):
+def evaluate_translations(predictions, references, sources=None, save_predictions_to=None):
     """Compute BLEU, chrF, and COMET."""
     results = {}
 
@@ -245,11 +261,30 @@ def evaluate_translations(predictions, references, sources=None):
             comet_out  = COMET_MODEL.predict(comet_data, batch_size=32, gpus=1)
             results['comet']     = float(np.mean(comet_out.scores))
             results['comet_std'] = float(np.std(comet_out.scores))
+            results['comet_sentence_scores'] = [float(s) for s in comet_out.scores]
         except Exception as e:
             print(f"  Warning: COMET failed: {e}")
             results['comet'] = results['comet_std'] = None
+            results['comet_sentence_scores'] = None
     else:
         results['comet'] = results['comet_std'] = None
+        results['comet_sentence_scores'] = None
+
+    results['sent_bleus'] = sent_bleus
+
+    # Optionally persist predictions for bootstrap significance testing
+    if save_predictions_to is not None:
+        import json, pathlib
+        pathlib.Path(save_predictions_to).parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            'sources': list(sources) if sources is not None else None,
+            'predictions': list(predictions),
+            'references': list(references),
+            'sent_bleus': sent_bleus,
+            'comet_scores': results['comet_sentence_scores'],
+        }
+        with open(save_predictions_to, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, ensure_ascii=False)
 
     return results
 
@@ -405,7 +440,8 @@ def fine_tune(train_df, val_df, representation, model_key, output_dir,
 
 def run_experiment(model_keys, representations, train_sizes, seeds,
                    output_dir='./models_supercomputer',
-                   run_zero_shot=True, result_suffix=''):
+                   run_zero_shot=True, result_suffix='',
+                   save_predictions=False, predictions_dir='results/predictions'):
 
     n_ft = len(model_keys) * len(representations) * len(train_sizes) * len(seeds)
     print(f"\n{'#' * 80}")
@@ -455,9 +491,16 @@ def run_experiment(model_keys, representations, train_sizes, seeds,
                     predictions = translate_with_model(
                         model, tokenizer, source_texts, model_key
                     )
+                    pred_path = None
+                    if save_predictions:
+                        pred_path = os.path.join(
+                            predictions_dir,
+                            f"{model_key}_{rep}_{train_size}_s{seed}_preds.json"
+                        )
                     scores = evaluate_translations(
                         predictions, test_data['english'].tolist(),
                         sources=test_data['chinese'].tolist(),
+                        save_predictions_to=pred_path,
                     )
                     print(f"    → {_fmt_scores(scores)}")
 
@@ -517,14 +560,35 @@ def run_experiment(model_keys, representations, train_sizes, seeds,
 # ============================================================================
 
 if __name__ == '__main__':
-    MODELS          = ['opus-mt', 'nllb-600M']
-    REPRESENTATIONS = ['baseline', 'morphemes', 'pinyin', 'radicals', 'cangjie', 'wubi']
-    TRAIN_SIZES     = [50, 100, 250, 500, 1000]
-    ALL_SEEDS       = [42, 123, 456]
-    OUTPUT_DIR      = './models_supercomputer'
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Subchar-MT fine-tuning experiment')
+    parser.add_argument('--version', choices=['v1', 'v2'], default='v2',
+                        help='v1=original 6 reps/3 seeds; v2=adds byte/random/SP, 5 seeds')
+    parser.add_argument('--save_predictions', action='store_true',
+                        help='Save per-condition predictions JSON for bootstrap testing')
+    parser.add_argument('--predictions_dir', default='results/predictions')
+    cli_args = parser.parse_args()
+
+    if cli_args.version == 'v1':
+        REPRESENTATIONS = ['baseline', 'morphemes', 'pinyin', 'radicals', 'cangjie', 'wubi']
+        ALL_SEEDS       = [42, 123, 456]
+    else:
+        # v2 adds three non-linguistic controls (Si et al. 2023) and expands to 5 seeds
+        REPRESENTATIONS = [
+            'baseline', 'morphemes', 'pinyin', 'radicals', 'cangjie', 'wubi',
+            'byte',          # UTF-8 hex bytes — non-linguistic sub-char control
+            'random_index',  # random 4-digit codes — pure structural control
+            'sentencepiece', # data-driven subword segmentation baseline
+        ]
+        ALL_SEEDS = [42, 123, 456, 789, 999]
+
+    MODELS      = ['opus-mt', 'nllb-600M']
+    TRAIN_SIZES = [50, 100, 250, 500, 1000]
+    OUTPUT_DIR  = './models_supercomputer'
 
     # ── Job-array mode: $SLURM_ARRAY_TASK_ID selects the seed ────────────────
-    # Each array task (0, 1, 2) runs one seed; task 0 also handles zero-shot.
+    # Each array task runs one seed; task 0 also handles zero-shot.
     # ── Standalone mode: no env var → run all seeds in series ────────────────
     array_task_id = int(os.environ.get('SLURM_ARRAY_TASK_ID', -1))
 
@@ -548,6 +612,8 @@ if __name__ == '__main__':
         output_dir=OUTPUT_DIR,
         run_zero_shot=run_zero_shot,
         result_suffix=suffix,
+        save_predictions=cli_args.save_predictions,
+        predictions_dir=cli_args.predictions_dir,
     )
 
     print(f'\n✓ Results saved to: finetuned_results_FINAL{suffix}.csv')
