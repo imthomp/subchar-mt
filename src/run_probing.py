@@ -69,9 +69,10 @@ def get_freq_labels(sources, freq_map, n_bins=3):
 
 def get_pos_labels(sources):
     try:
-        # Patch MD5 check — blocked by FIPS mode on BYU cluster
+        # Patch MD5 checks — blocked by FIPS mode on BYU cluster
         import stanza.resources.common as _stanza_common
         _stanza_common.get_md5 = lambda path: "skipped"
+        _stanza_common.assert_file_exists = lambda path, md5=None, alternate_md5=None: None
         import stanza
         nlp = stanza.Pipeline('zh-hans', processors='tokenize,pos',
                                use_gpu=False, verbose=False,
@@ -110,6 +111,14 @@ def train_probe(states, labels):
     # Need at least 2 classes
     if len(np.unique(y)) < 2:
         return None
+
+    # Drop classes with < 2 members so stratified split doesn't fail
+    from collections import Counter
+    counts = Counter(y.tolist())
+    keep = np.array([i for i in range(len(X)) if counts[y[i]] >= 2])
+    if len(keep) < 20:
+        return None
+    X, y = X[keep], y[keep]
 
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.25,
                                                 random_state=42, stratify=y)

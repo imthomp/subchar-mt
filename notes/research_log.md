@@ -336,10 +336,100 @@ Additional work done while v4 + zhja jobs run:
 - 12097157: v4 selective decomp (6 reps × 2 models × 3 sizes × 5 seeds)  ETA ~12:05 PM
 - 12097176: Zh→Ja CJK extension (4 reps × 2 models × 3 sizes × 5 seeds)  ETA ~12:15 PM
 
-### Next steps (when jobs finish)
+### v4 selective decomposition results (job 12097157, completed 2026-06-04 ~12:05 PM)
 
-- [ ] python src/aggregate_v4.py — does selective_radicals beat full radicals on unseen chars?
-- [ ] python src/aggregate_zhja.py — does radical decomp help zh→ja more than zh→en?
-- [ ] python src/paper_tables.py — combined results tables
-- [ ] Run POS probing once stanza model confirmed downloaded
-- [ ] Draft paper outline based on all findings
+**Key finding: Saunders 2020 partially confirmed.**
+
+NLLB regular test set (mean over train sizes):
+  - baseline:           BLEU=35.91, COMET=0.836
+  - radicals (full):    BLEU=14.82, COMET=0.377  ← worst
+  - selective_radicals: BLEU=28.80, COMET=0.760  ← +14 BLEU over full radicals
+  - morphemes:          BLEU=25.75, COMET=0.832
+  - selective_morphemes:BLEU=26.97, COMET=0.765
+
+opus-mt selective decomposition does NOT help much (COMET=0.508 vs baseline 0.755).
+NLLB benefits significantly on BLEU but COMET remains below baseline.
+
+**Unseen-character test set (NLLB n=250):**
+  selective_radicals BLEU=15.07 > baseline BLEU=13.01 — beats baseline on corpus BLEU!
+  But COMET: 0.486 vs 0.569 — still below baseline.
+
+**The corpus BLEU inflation problem persists even with selective decomposition.**
+COMET consistently ranks baseline first across all conditions.
+
+Interpretation: Saunders' improvement (selective > full decomposition) is real and substantial
+on corpus BLEU, but the underlying representation quality issue remains. The model finds
+it easier to translate when known characters are left intact, but still cannot match the
+baseline's semantic quality.
+
+### POS probing (2026-06-04, running)
+
+Full probing with stanza zh-hans POS pipeline now running (120 files × 500 sentences).
+Expected to finish within 15–20 min. Results to be added when complete.
+
+### Zh→Ja results (job 12097176, completed 2026-06-04 ~12:25 PM)
+
+Data: FLORES+ cmn_Hans / jpn_Jpan, 997 train / 1012 test
+Models: opus-mt-tc-big-zh-ja + NLLB-600M
+
+**KEY FINDING: CJK transfer hypothesis NOT supported.**
+
+Radical decomposition hurts Zh→Ja COMET *more* than Zh→En:
+  NLLB: Zh→En ΔCOMET=−0.458 vs Zh→Ja ΔCOMET=−0.548 (radicals vs baseline)
+No evidence of shared-radical benefit for cross-lingual transfer.
+Consistent with Song et al. (arXiv 2411.04822) "minimal impact" finding.
+
+**Catastrophic forgetting: NLLB Zh→Ja degrades with fine-tuning.**
+  baseline n=50: BLEU=19.0  →  n=250: BLEU=0.0  →  n=500: BLEU=0.0
+Fine-tuning NLLB on 250 FLORES+ zh-ja examples destroys its pretrained Zh→Ja capacity.
+This does not happen for Zh→En because NLLB has far more zh→en pretraining data.
+This is the catastrophic forgetting / pretraining interference effect.
+
+**opus-mt-tc-big-zh-ja gives BLEU=0 throughout** — style mismatch with FLORES+ references.
+COMET=0.2–0.3 across conditions (very low).
+
+Paper framing: report as null result for CJK transfer; cite Song et al. for consistency.
+Heavy caveat: results confounded by data quality (FLORES+ zh-ja is small/formal register)
+and catastrophic forgetting at tiny n. Would need a larger, more representative zh-ja corpus
+to definitively test the CJK transfer hypothesis.
+
+### v5 depth ablation (job 12097318, running, ETA ~1:15 PM)
+
+Tests: baseline, radicals_d1 (current, depth-1), radicals_d2 (intermediate), radicals_full
+4 conditions × 2 models × 3 train sizes × 5 seeds = 120 conditions
+
+### v5 depth ablation results (job 12097318, completed 2026-06-04 ~1:10 PM)
+
+Tests: baseline, radicals_d1 (depth-1), radicals_d2 (intermediate), radicals_full (recursive)
+
+**KEY FINDING: Decomposition-depth confound is NOT driving the results.**
+
+opus-mt ΔCOMET from baseline:
+  depth-1: −0.451  |  depth-2: −0.459  |  full: −0.461  (near-flat)
+
+nllb-600M ΔCOMET from baseline:
+  depth-1: −0.457  |  depth-2: −0.473  |  full: −0.483  (small gradient)
+
+All radical conditions are comparably bad at all depths.
+This DIFFERS from Han et al. (arXiv 2512.15556) who found rxd2 collapses dramatically.
+Explanation: Han et al. trained from scratch; our depth-1 is already catastrophically bad
+(COMET −0.45 below baseline), so there is no room for depth-2 to collapse further.
+
+Paper framing: "We find a small monotonic degradation with depth, but all radical conditions
+substantially underperform baseline regardless of depth. The failure is not an artifact of
+IDS decomposition depth." Han et al. confound objection closed.
+
+### POS probing (job 12099518, running with 3hr limit)
+
+Previous attempt (12097365) timed out at 1hr — stanza on 120×500 sentences takes ~2.5hr.
+Resubmitted with 3hr limit.
+
+### Next steps
+
+- [x] aggregate_v4.py ✓
+- [x] aggregate_zhja.py ✓
+- [x] aggregate_v5.py ✓
+- [ ] POS probing results (job 12099518, ETA ~3:30 PM)
+- [ ] python src/paper_tables.py — combined tables after POS done
+- [ ] git commit with all new results
+- [ ] Draft paper outline

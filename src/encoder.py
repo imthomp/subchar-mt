@@ -108,12 +108,37 @@ class LinguisticEncoder:
             result.append(''.join(zhuyin))
         return ' '.join(result)
 
-    def to_radicals(self, text: str) -> str:
-        """Return space-joined flat IDS components (layout markers stripped)."""
+    def to_radicals(self, text: str, depth: int = 1) -> str:
+        """
+        Return space-joined IDS components at the given decomposition depth.
+
+        depth=1 (default): direct components only — ideograph-level (Han et al. rxd1).
+          e.g. 語 → 言 吾
+        depth=2: intermediate — decompose each component one more level (Han et al. rxd2).
+          e.g. 語 → 言 五 口   (吾 → 五 口; Han et al. found this COLLAPSES performance)
+        depth≥6: near-primitive — recursive until no further decomposition possible.
+          e.g. 語 → 言 一 𫝀 口
+
+        Han, Jones & Smeaton (arXiv 2512.15556) found rxd1 ≈ rxd3 ≈ word baseline
+        but rxd2 collapses to ~12.86 BLEU. This depth parameter enables that ablation.
+        """
+        def _decomp_char(ch: str, remaining_depth: int) -> List[str]:
+            if remaining_depth == 0:
+                return [ch]
+            raw = self.ids_map.get(ch)
+            if raw is None:
+                return [ch]
+            components = [c for c in raw if c not in self._IDS_LAYOUT_MARKERS]
+            if not components:
+                return [ch]
+            result: List[str] = []
+            for comp in components:
+                result.extend(_decomp_char(comp, remaining_depth - 1))
+            return result
+
         parts: List[str] = []
         for char in text:
-            decomp = self.ids_map.get(char, char)
-            parts.extend(c for c in decomp if c not in self._IDS_LAYOUT_MARKERS)
+            parts.extend(_decomp_char(char, depth))
         return ' '.join(parts)
 
     def segment_morphemes(self, text: str, mode: str = 'accurate') -> str:
