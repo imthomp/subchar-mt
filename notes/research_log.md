@@ -424,12 +424,113 @@ IDS decomposition depth." Han et al. confound objection closed.
 Previous attempt (12097365) timed out at 1hr — stanza on 120×500 sentences takes ~2.5hr.
 Resubmitted with 3hr limit.
 
+### POS probing final results (job 12099524, m12 CPU, completed 2026-06-04 ~5:57 PM)
+
+240 probe results (120 files × 2 tasks: frequency + POS).
+
+**POS probing summary (majority baseline = 0.727):**
+
+| model | rep | POS Δacc | freq Δacc |
+|---|---|---|---|
+| opus-mt | morphemes | **+0.007** ← only positive | +0.276 |
+| opus-mt | baseline | −0.021 | +0.273 |
+| opus-mt | SP | −0.041 | +0.278 |
+| opus-mt | radicals | **−0.089** ← worst | +0.150 |
+| nllb | baseline | −0.032 | +0.156 |
+| nllb | morphemes | −0.043 | +0.149 |
+| nllb | SP | −0.048 | +0.188 |
+| nllb | radicals | **−0.087** ← worst | +0.119 |
+
+**Key mechanistic finding:** Morphemes improve POS encoding (only condition above majority
+baseline) but still hurt COMET. This means morpheme segmentation teaches the encoder
+syntactic structure but disrupts semantic representations. Not just "wrong format" —
+the model learns something coherent but *translationally misaligned*.
+
+### NLLB Zh→Ja forgetting analysis (2026-06-04)
+
+Post-hoc analysis of zhja results — COMET stays stable (~0.83) when BLEU drops to 0.
+The "forgetting" is specifically a BLEU failure, not a quality failure:
+- At n=50, NLLB's pretrained output matches FLORES+ reference phrasing → BLEU=19
+- At n=250, fine-tuning shifts translation style → valid Japanese, wrong n-grams → BLEU=0
+
+This is the metric artifact again, in a new regime. Adds a third demonstration of the
+BLEU/COMET divergence alongside the main experiment and the byte encoding control.
+
+SP recovers most strongly at n=500 (BLEU=16): SP input shares more structure with
+NLLB's pretrained tokenization, enabling faster re-alignment to FLORES+ reference style.
+
+### Paper framing discussions (2026-06-04 afternoon)
+
+**Core reframe:** The paper is a negative result / methods paper:
+  "Sub-character representations don't help low-resource Chinese MT, and corpus BLEU
+  made us think they did."
+Publishable because: clean controls (byte/random_index), mechanistic evidence (probing),
+and explains *why* the literature looks contradictory.
+
+**Version A vs B debate:**
+  - Version B (pretraining mismatch as headline) safer for EMNLP
+  - But BLEU mechanism is specific enough to lead with more confidence than typical
+    "BLEU is bad" papers. Byte encoding is the clean proof: non-linguistic encoding
+    inflates corpus BLEU, which cannot be explained by "the encoding carries useful signal."
+  - Resolution: Version B title/abstract, Version A as the concrete novel mechanism in body.
+  - Candidate title: "Sub-Character Representations Hurt Low-Resource Chinese MT:
+    Pretraining Mismatch and Metric Artifacts"
+
+**Low-resource practitioner angle (discussed):**
+  Stronger framing: "What should you actually do when fine-tuning Chinese MT on limited data?"
+  - Problem: practitioners use corpus BLEU + representation engineering. Both wrong.
+  - Finding 1: Corpus BLEU misleads via token-count inflation in this specific setting
+  - Finding 2: No rep improves over raw chars under correct evaluation
+  - Finding 3: Mechanism (probing) — pretraining mismatch
+  - Finding 4: Partial exception — selective decomp on unseen chars at n=250 for NLLB
+  - Finding 5: NLLB forgetting warning for multi-language scenarios
+
+**On LoRA specificity:** Frame as deliberate methodological choice (realistic low-resource
+deployment scenario), not limitation. Hu et al. 2022 + Ding et al. 2023. Full fine-tuning
+as future work.
+
+**Venue:** EMNLP 2026 primary. ACL "reliable/trustworthy NLP" theme if timeline fits.
+WMT/WAT for Zh→Ja null result as companion short paper.
+
+**Remaining gap:** Human/LLM-judge evaluation on a subset (100 sentences). Single highest-
+leverage addition before submission.
+
+### Original intuition revisited (2026-06-04 evening)
+
+User's original intuition: "teaching a model character meanings the way humans learn them
+would improve it." The experiments show why this didn't work:
+1. The intervention was at input representation level, AFTER pretraining had already encoded
+   character knowledge. Disrupts existing knowledge without replacing it.
+2. Transparency × rep null result: even for semantically transparent characters (where
+   radical→meaning is valid), radicals don't help. The pathway radical→meaning→translation
+   wasn't utilized even when psycholinguistics says it should be.
+3. Probing: radicals destroy BOTH frequency and POS signal — fundamental encoder disruption,
+   not just "wrong format."
+
+What was NOT tested: injecting semantic knowledge at the embedding level or providing
+explicit semantic context at inference time.
+
+### Gloss injection experiment (job 12106948, running 2026-06-04 evening)
+
+Zero-shot inference on unseen-char test set (200 sentences) with character glosses prepended:
+  - unglossed: raw Chinese source
+  - glossed_all: "[稀: rare; 澄: clear] {source}" using CC-CEDICT definitions
+  - glossed_transparent_only: same but adds radical composition for transparent chars
+    "[明 (日+月): bright; ...]" using HKCCPN + IDS
+
+Tests: does explicit semantic context at inference time help for rare characters?
+Stratified by HKCCPN transparency (high vs. low) to test the theoretically motivated
+hypothesis that glosses help more for semantically transparent characters.
+
+Data: CC-CEDICT downloaded (125K entries, data/cedict_ts.u8)
+ETA: ~1 hour
+
 ### Next steps
 
-- [x] aggregate_v4.py ✓
-- [x] aggregate_zhja.py ✓
-- [x] aggregate_v5.py ✓
-- [ ] POS probing results (job 12099518, ETA ~3:30 PM)
-- [ ] python src/paper_tables.py — combined tables after POS done
-- [ ] git commit with all new results
-- [ ] Draft paper outline
+- [x] POS probing ✓
+- [x] v5 depth ablation ✓  
+- [x] Zh→Ja forgetting analysis ✓
+- [ ] Gloss injection results (job 12106948)
+- [ ] Human/LLM eval on 100-sentence subset
+- [ ] Commit + push all new code
+- [ ] Start paper draft
