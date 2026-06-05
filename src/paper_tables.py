@@ -149,9 +149,11 @@ def table_transparency(df_trans):
     print("Table: HKCCPN transparency stratification (mean BLEU / chrF)")
     print(f"{'='*70}")
     strata_order = ['low', 'mid', 'high', 'unseen', 'seen']
+    bleu_col = 'bleu_mean' if 'bleu_mean' in df_trans.columns else 'bleu'
+    chrf_col = 'chrf_mean' if 'chrf_mean' in df_trans.columns else 'chrf'
     summ = df_trans.groupby(['model', 'representation', 'stratum']).agg(
-        bleu=('bleu_mean', 'mean'),
-        chrf=('chrf_mean', 'mean'),
+        bleu=(bleu_col, 'mean'),
+        chrf=(chrf_col, 'mean'),
     ).round(2).reset_index()
 
     for model in ['opus-mt', 'nllb-600M']:
@@ -195,6 +197,28 @@ def main():
 
     if probe is not None:
         table_probing(probe)
+        # POS probing summary if available
+        pos_df = probe[probe['task'] == 'pos']
+        if not pos_df.empty:
+            print(f"\n{'='*70}")
+            print("Table: POS probing accuracy (Δ over majority baseline ~0.727)")
+            print(f"{'='*70}")
+            pos_summ = pos_df.groupby(['model', 'rep']).agg(
+                delta=('delta_acc', 'mean'),
+                acc=('accuracy', 'mean'),
+                majority=('majority_baseline', 'mean'),
+            ).round(4).reset_index()
+            for model in ['opus-mt', 'nllb-600M']:
+                print(f"\n  {MODEL_LABELS.get(model, model)}")
+                m = pos_summ[pos_summ['model'] == model].sort_values('delta', ascending=False)
+                print(f"  {'Rep':22s}  {'Δ acc':>8}  {'acc':>8}  {'majority':>8}")
+                print('  ' + '-' * 50)
+                for _, row in m.iterrows():
+                    label = REP_LABELS.get(row['rep'], row['rep'])
+                    marker = ' ← highest' if row['delta'] == m['delta'].max() else \
+                             ' ← lowest'  if row['delta'] == m['delta'].min() else ''
+                    print(f"  {label:22s}  {row['delta']:>8.4f}  {row['acc']:>8.4f}  "
+                          f"{row['majority']:>8.4f}{marker}")
     else:
         print("\n[probing results not found]")
 

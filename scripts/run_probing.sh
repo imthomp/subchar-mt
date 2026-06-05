@@ -2,11 +2,10 @@
 #SBATCH --time=03:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --partition=dw
-#SBATCH --qos=matrix
-#SBATCH --account=ekr8
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --partition=m12
+#SBATCH --qos=normal
 #SBATCH --job-name=probing
 #SBATCH --output=logs/probing_%j.out
 #SBATCH --error=logs/probing_%j.err
