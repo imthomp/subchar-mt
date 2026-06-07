@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  7 JUN 2026 09:24
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  7 JUN 2026 15:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1105,16 +1105,18 @@ Underfull \hbox (badness 1867) in paragraph at lines 183--184
 are cor-
  []
 
-[3]
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [3]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4]
 Underfull \hbox (badness 1043) in paragraph at lines 267--268
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 drops $\OMS/cmsy/m/n/10.95 ^^@$\TU/t
 exgyretermes-regular.otf(0)/m/n/10.95 0.12 below baseline on frequency and
  []
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [4]
 Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 
@@ -1149,6 +1151,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 284.
 
+[5]
 Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 日 (U+65E5) in font [texgyretermes-regular.otf]/O
@@ -1163,12 +1166,21 @@ Underfull \hbox (badness 1112) in paragraph at lines 298--299
 $\OMS/cmsy/m/n/10.95 ^^U$\TU/texgyretermes-regular.otf(0)/m/n/10.95 0.6 HKC-
  []
 
-[5]
+
 Overfull \hbox (20.81497pt too wide) in paragraph at lines 334--355
  [][] 
  []
 
 [6]
+Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+
+Underfull \hbox (badness 1205) in paragraph at lines 369--370
+ []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Why does the baseline win?[] \TU/
+texgyretermes-regular.otf(0)/m/n/10.95 Pretrained MT
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 375--376
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Practitioner implications.[] \TU/
 texgyretermes-regular.otf(0)/m/n/10.95 For low-resource
@@ -1310,7 +1322,7 @@ Underfull \hbox (badness 1137) in paragraph at lines 385--386
 reserves
  []
 
-
+[7]
 Underfull \hbox (badness 1189) in paragraph at lines 391--392
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 ing corpora, or training-from-scratc
 h scenarios.
@@ -1323,9 +1335,6 @@ and Philipp
  []
 
 
-Underfull \vbox (badness 1983) has occurred while \output is active []
-
- [7]
 Underfull \hbox (badness 1796) in paragraph at lines 45--52
 []\TU/texgyretermes-regular.otf(0)/m/n/10 Markus Freitag, Ricardo Rei, Nitika M
 athur, Chi-
@@ -1337,19 +1346,25 @@ Underfull \hbox (badness 10000) in paragraph at lines 55--61
 19.
  []
 
-
+[8]
 Underfull \hbox (badness 1715) in paragraph at lines 106--112
 []\TU/texgyretermes-regular.otf(0)/m/n/10 Ricardo Rei, José G. C. de Souza, Dua
 rte Alves,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--159
+Underfull \hbox (badness 2894) in paragraph at lines 115--120
+[]\TU/texgyretermes-regular.otf(0)/m/n/10 Danielle Saunders, Wenda Feely, and B
+ill Byrne.
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 155--160
 \TU/texgyretermes-regular.otf(0)/m/n/10 English neural machine translation with
  sub-
  []
 
-[8]) [9
+) [9
 
 ] [10] (./main.aux)
  ***********
@@ -1360,12 +1375,12 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D97C8D70BF4084474048303E088DA060;3094.
  ) 
 Here is how much of TeX's memory you used:
- 17992 strings out of 474761
- 370146 string characters out of 5755729
+ 17991 strings out of 474761
+ 370133 string characters out of 5755729
  1963145 words of memory out of 5000000
- 39916 multiletter control sequences out of 15000+600000
+ 39915 multiletter control sequences out of 15000+600000
  566799 words of font info for 104 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 84i,11n,93p,1858b,551s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,11n,93p,1858b,535s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 Output written on main.pdf (10 pages).

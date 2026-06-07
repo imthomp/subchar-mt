@@ -110,12 +110,13 @@ Ricardo Rei, Jos{\'e}~G. C.~de Souza, Duarte Alves, Chrysoula Zerva, Ana~C
 \newblock In \emph{Proceedings of the 23rd Annual Conference of the European
   Association for Machine Translation ({EAMT})}.
 
-\bibitem[{Saunders et~al.(2020)Saunders, Stahlberg, and
-  Byrne}]{saunders-etal-2020-selective}
-Danielle Saunders, Felix Stahlberg, and Bill Byrne. 2020.
-\newblock Selective attention for context-aware neural machine translation.
-\newblock In \emph{Proceedings of the 2020 Conference of the North {A}merican
-  Chapter of the Association for Computational Linguistics ({NAACL})}, Online.
+\bibitem[{Saunders et~al.(2020)Saunders, Feely, and
+  Byrne}]{saunders-etal-2020-subchar}
+Danielle Saunders, Wenda Feely, and Bill Byrne. 2020.
+\newblock Inference-only sub-character decomposition improves translation of
+  unseen logographic characters.
+\newblock In \emph{Proceedings of the 7th Workshop on Asian Translation
+  ({WAT})}, Suzhou, China.
 
 \bibitem[{Shi et~al.(2015)Shi, Wei, Chen, Xue et~al.}]{shi-etal-2015-radical}
 Xinlei Shi, Guolong Wei, Chunqi Chen, Nan Xue, and 1 others. 2015.

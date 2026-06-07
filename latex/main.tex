@@ -166,11 +166,11 @@ Table~\ref{tab:main} presents the primary results at $n=1000$ training sentences
  & radicals       &  2.17 & $-$10.2 & 0.319 & $-$0.267 \\
 \bottomrule
 \end{tabular}
-\caption{Main Zh$\to$En results at $n=1000$, averaged over 5 seeds. COMET ranges from $-1$ to $1$; higher is better. The raw-character baseline achieves the best COMET in every condition. Bootstrap $p$-values for COMET differences are all $>0.46$ for morphemes/SP, indicating the small improvements are not statistically significant; for radicals, $p<0.001$ (not shown---differences are $>$10$\sigma$ in absolute terms).}
+\caption{Main Zh$\to$En results at $n=1000$, averaged over 5 seeds. COMET (wmt22-comet-da) scores are typically in the range 0--1 for reasonable translations; higher is better. The raw-character baseline achieves the best COMET in every condition. Bootstrap $p$-values for COMET differences are all $>0.46$ for morphemes/SP, indicating the small improvements are not statistically significant; for radicals, $p<0.001$ (not shown---differences are $>$10$\sigma$ in absolute terms).}
 \label{tab:main}
 \end{table*}
 
-The key pattern is immediately visible: corpus BLEU drops for morphemes and SP relative to baseline (both increase token count, producing longer hypotheses that are nonetheless judged lower quality), while COMET also drops monotonically---just less dramatically. Radical decomposition produces near-zero BLEU (the model sees entirely out-of-vocabulary tokens at test time) and collapses COMET by 0.40--0.27 points.
+The key pattern is immediately visible: corpus BLEU drops for morphemes and SP relative to baseline (both increase token count, producing longer hypotheses that are nonetheless judged lower quality), while COMET also drops monotonically---just less dramatically. Radical decomposition produces near-zero BLEU (the model sees entirely out-of-vocabulary tokens at test time) and collapses COMET by 0.40--0.27 points. Table~\ref{tab:main} reports the three most informative conditions: morphemes and sentencepiece represent the best-performing alternatives, and radicals represent the worst; cangjie, wubi, pinyin, byte, and random\_index show qualitatively identical or worse patterns and are omitted for space (full results in Appendix~\ref{app:full_results}).
 
 \begin{figure*}[t]
   \centering
@@ -279,14 +279,14 @@ We divide test sentences into \textit{high-transparency} ($>$0.6) and \textit{lo
 
 \subsection{Selective Decomposition}
 
-\citet{saunders-etal-2020-selective} proposed decomposing only OOV tokens, leaving in-vocabulary tokens unchanged. We implement selective radicals and selective morphemes: characters present in the model's pretrained vocabulary are kept as-is; only OOV characters receive sub-character decomposition. Under COMET, selective radicals performs worse than baseline (NLLB: $-$0.10; opus-mt: $-$0.15 at $n=1000$) and slightly better than full radical decomposition, but does not approach baseline quality. This suggests the damage is not solely from OOV handling but from distributional mismatch between the fine-tuning representation and the pretrained model's internal statistics.
+\citet{saunders-etal-2020-subchar} proposed decomposing only OOV tokens, leaving in-vocabulary tokens unchanged. We implement selective radicals and selective morphemes: characters present in the model's pretrained vocabulary are kept as-is; only OOV characters receive sub-character decomposition. Under COMET, selective radicals performs worse than baseline (NLLB: $-$0.10; opus-mt: $-$0.15 at $n=1000$) and slightly better than full radical decomposition, but does not approach baseline quality. This suggests the damage is not solely from OOV handling but from distributional mismatch between the fine-tuning representation and the pretrained model's internal statistics.
 
 \subsection{Cross-Lingual Generalization: Zh$\to$Ja}
 \label{sec:zhja}
 
 To test whether the artifact is specific to Zh$\to$En, we replicate the main experiment on Zh$\to$Ja using FLORES+. Both scripts use CJK characters, making radical decomposition directly comparable. The pattern replicates: NLLB radical decomposition produces $\Delta$COMET $= -0.548$ (vs.\ baseline) compared to $-$0.458 in Zh$\to$En, confirming that the degradation is not mediated by the target language.
 
-We also observe an apparent BLEU catastrophe for NLLB Zh$\to$Ja: BLEU drops to near zero ($<$1.0) while COMET remains at 0.83, suggesting the model's translations are fluent and meaning-preserving but diverge stylistically from FLORES+ reference sentences. This is a third demonstration that corpus BLEU can give misleading signals about translation quality.
+We also observe an apparent BLEU catastrophe for NLLB Zh$\to$Ja: BLEU drops to near zero ($<$1.0) while COMET remains at 0.83, suggesting the model's translations are fluent and meaning-preserving but diverge stylistically from FLORES+ reference sentences. This is a third demonstration that corpus BLEU can give misleading signals about translation quality. Separately, NLLB fine-tuned on as few as 250 Zh$\to$En examples loses much of its Zh$\to$Ja capability regardless of representation---a practical warning that even small LoRA fine-tuning runs on NLLB can degrade multilingual coverage, and that cross-lingual evaluation is worth including before deploying a fine-tuned model in production.
 
 %% ============================================================
 \section{Zero-Shot Gloss Injection}
@@ -356,7 +356,7 @@ Qwen2.5-32B   & vs.\ SP        & \textbf{48} &  4 & 48 \\
 \label{tab:llm_judge}
 \end{table}
 
-Results are in Table~\ref{tab:llm_judge}. Qwen2.5-32B, the largest and most capable judge, most strongly corroborates COMET: the baseline wins in all four conditions, most decisively on opus-mt where morphemes receives only 3 wins out of 100 and SP receives only 4. Llama~3.1~8B shows a similar trend with slightly more noise. Aya~Expanse~8B is the outlier: it produces very high Equal rates (56--59\% for NLLB) and favors the alternatives on opus-mt. We attribute this to Aya's multilingual training---it can read the Chinese source directly and may assess adequacy relative to the source rather than via reference comparison, a different evaluation axis than the other two judges.
+Results are in Table~\ref{tab:llm_judge}. Qwen2.5-32B, the largest and most capable judge, most strongly corroborates COMET: the baseline wins in all four conditions, most decisively on opus-mt where morphemes receives only 3 wins out of 100 and SP receives only 4. Llama~3.1~8B shows a similar trend with slightly more noise. Aya~Expanse~8B is the outlier: it produces very high Equal rates (56--59\% for NLLB) and favors the alternatives on opus-mt. We speculate this reflects Aya's multilingual training: it may read the Chinese source directly and assess adequacy relative to the source rather than via reference comparison, which would constitute a different evaluation axis than the other two judges. We cannot rule out other causes (e.g., instruction-following differences or length preferences).
 
 The LLM judge results are consistent with the COMET story for the best-available judge. Taken together, three independent evaluation signals---COMET, sentence BLEU, and LLM preference---all point in the same direction: raw-character baseline is at least as good as, and usually better than, any sub-character alternative under LoRA fine-tuning.
 
@@ -366,7 +366,7 @@ The LLM judge results are consistent with the COMET story for the best-available
 %% ============================================================
 
 \paragraph{Why does the baseline win?}
-Raw Chinese characters are already highly informative inputs for a pretrained subword model. The model's SentencePiece or BPE vocabulary often covers multi-character words, and even when a character is UNK, the model can contextualize it via attention over its neighbors. Introducing radical decomposition replaces a known-bad single token (UNK) with several unknown-context tokens (the radical sequence), which is a worse starting point for the encoder.
+Pretrained MT models already have a stable, learned mapping from their native token vocabulary to meaning representations. A Chinese character the model hasn't seen will be UNK or split into byte-fallback pieces, but the surrounding context---which the model \textit{has} seen---can still guide the encoder via attention. Radical decomposition replaces this familiar-token-in-context regime with a sequence of radical tokens that are simultaneously unfamiliar (not in the pretrained distribution) and semantically decontextualized (the radical sequence of 明 carries no guarantee of representing ``brightness'' without the compositional inference that the pretrained model never learned to perform). LoRA fine-tuning patches the output end but cannot rewrite the encoder's first-pass representation of an entirely novel token sequence. The probing results make this concrete: radical inputs destroy both the frequency-bin and POS signals the encoder had encoded for Chinese characters, and nothing in the fine-tuning objective restores them.
 
 \paragraph{The LoRA specificity hypothesis.}
 An alternative interpretation is that LoRA fine-tuning with very few parameters ($<$1\% of model parameters) is simply too constrained to learn a new representation from scratch. Full fine-tuning might behave differently. We consider this unlikely given that (1) the COMET degradation is consistent at all training sizes and both LoRA ranks tested, and (2) the probing results show that the encoder does form different representations under different input schemes---the problem is not the adapter capacity but the structural mismatch between pretrained and fine-tuning-time input distributions.
@@ -406,7 +406,7 @@ Experiments were conducted on the BYU Research Computing supercomputer cluster. 
 \label{app:full_results}
 %% ============================================================
 
-Table~\ref{tab:full_bootstrap} reports all conditions from the pooled bootstrap analysis (regular test set, all training sizes).
+Table~\ref{tab:full_bootstrap} reports morphemes, SentencePiece, and radicals across all training sizes (regular test set). Cangjie, wubi, pinyin, byte, and random\_index show qualitatively similar or worse COMET patterns and are omitted; full data is available in the released code.
 
 \begin{table*}[t]
 \centering
