@@ -202,7 +202,7 @@ def run_llm_eval(args):
     out_dir = PROJECT_DIR / 'results' / 'llm_eval'
     out_dir.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(all_results)
-    df.to_csv(out_dir / 'judgments.csv', index=False)
+    df.to_csv(out_dir / args.out_name, index=False)
 
     # Summary
     print(f"\n{'='*60}")
@@ -210,7 +210,7 @@ def run_llm_eval(args):
     print(f"{'='*60}")
     summ = df.groupby(['mt_model', 'rep_b', 'winner']).size().unstack(fill_value=0)
     print(summ.to_string())
-    print(f"\n✓ Saved {len(df)} judgments to {out_dir}/judgments.csv")
+    print(f"\n✓ Saved {len(df)} judgments to {out_dir}/{args.out_name}")
 
     return df
 
@@ -222,6 +222,7 @@ def main():
     parser.add_argument('--n_sentences', type=int, default=100)
     parser.add_argument('--train_size',  type=int, default=500)
     parser.add_argument('--load_in_4bit', action='store_true')
+    parser.add_argument('--out_name', default='judgments.csv')
     args = parser.parse_args()
     run_llm_eval(args)
 

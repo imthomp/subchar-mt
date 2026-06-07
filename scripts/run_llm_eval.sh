@@ -33,7 +33,8 @@ PYTHONPATH="$PROJECT_DIR/src" $PYTHON src/llm_eval.py \
     --preds_dir results/predictions_v3/ \
     --model_id meta-llama/Llama-3.1-8B-Instruct \
     --n_sentences 100 \
-    --train_size 500 \
+    --train_size 1000 \
+    --out_name judgments_llama8b.csv \
     2>&1 | tee logs/llm_eval.log
 
 echo "Done: $(date)"

@@ -525,12 +525,99 @@ hypothesis that glosses help more for semantically transparent characters.
 Data: CC-CEDICT downloaded (125K entries, data/cedict_ts.u8)
 ETA: ~1 hour
 
+### Gloss injection results (job 12106948, completed 2026-06-04 evening)
+
+**Finding: glosses consistently HURT COMET by −0.05 to −0.06.**
+
+| model     | condition               | COMET |
+|-----------|-------------------------|-------|
+| NLLB      | unglossed               | 0.566 |
+| NLLB      | glossed_all             | 0.509 (−0.057) |
+| NLLB      | glossed_transparent     | 0.521 (−0.045) |
+| opus-mt   | unglossed               | 0.585 |
+| opus-mt   | glossed_all             | 0.525 (−0.060) |
+| opus-mt   | glossed_transparent     | 0.537 (−0.048) |
+
+BLEU and chrF are **identical** across conditions — the model ignores the gloss prefix
+in its lexical choices entirely. COMET decreases suggest the gloss tokens dilute the input
+representation without the model learning to use them.
+
+**Interpretation:** Pretrained translation models cannot utilize semantic context added at
+inference time. Same pretraining mismatch story: the model has never seen bracketed CC-CEDICT
+entries in its training distribution and has no mechanism to extract information from them.
+This rules out inference-time gloss injection as a workaround for the rare-character problem.
+
+---
+
+## Session — 2026-06-05
+
+### LLM-as-judge evaluation
+
+Three open models queued:
+- **Llama 3.1 8B Instruct** (job 12114525): re-submit after fixing `--train_size 500→1000` bug.
+  First run (job 12107069) ran 66s, produced header-only CSV. Root cause: `load_predictions()`
+  found no files because v3 only has sizes [50, 250, 1000]; the script exited cleanly with
+  empty all_results, then crashed on `df.groupby(['mt_model', ...])` on empty DataFrame.
+- **Qwen2.5-72B-Instruct** (job 12114555): submitted after download complete. 2x GPU, 4hr.
+- **Aya Expanse 8B** (job 12114556): submitted after download complete. 1x GPU, 2hr.
+
+Comparison: baseline (A) vs. morphemes (B) and baseline (A) vs. sentencepiece (B),
+100 sentences each, 5-seed pooled predictions.
+
+### Paper draft started
+
+First full draft written: `latex/main.tex` using ACL review template + xeCJK for Chinese
+examples. Sections: Abstract, Introduction, Background, Setup, Results (main table +
+unseen-char table), Analysis (probing, transparency, depth ablation, selective decomp,
+Zh→Ja), Discussion, Conclusion, Limitations.
+
+**Key numbers in draft:**
+- NLLB baseline: BLEU=22.75, COMET=0.835 at n=1000
+- Morphemes: ΔBLEU=−0.45, ΔCOMET=−0.002 (nearly identical quality)
+- Radicals: ΔBLEU=−20.5, ΔCOMET=−0.396 (catastrophic)
+- Probing: morphemes achieve POS Δacc=+0.007 (only representation above majority
+  baseline on POS), but COMET still drops. Radicals: POS Δacc=−0.089.
+- Gloss injection: −0.06 COMET, BLEU unchanged
+- Zh→Ja: radical ΔCOMET=−0.548 consistent with Zh→En pattern
+
+Compilation: xelatex compiles to 7 pages (CJK font not on cluster, will compile on Overleaf).
+Bibliography: `custom.bib` with 17 entries.
+
+### LLM eval results (completed 2026-06-07)
+
+All three judges finished. Qwen2.5-32B was the downloaded model (not 72B as initially labeled).
+Scripts fixed to write per-judge output files (--out_name flag).
+
+**Llama 3.1 8B** (job 12114525, from log — CSV was overwritten by Aya):
+| model | vs | A(baseline) | B(alt) | Equal |
+|-------|----|-------------|--------|-------|
+| NLLB  | morphemes | 44 (46%) | 47 (49%) | 5 |
+| NLLB  | SP | **50 (52%)** | 38 (40%) | 8 |
+| opus-mt | morphemes | 47 (47%) | 43 (43%) | 5 |
+| opus-mt | SP | 47 (47%) | 49 (49%) | 0 |
+Mean adequacy NLLB morphemes: A=3.78, B=4.01 (essentially tied)
+
+**Aya Expanse 8B** (job 12114556, judgments_aya8b.csv — overwrote Llama's file):
+Very high Equal rate (56–59%), conservative judge. Notably favors alternatives on opus-mt
+(morphemes 44%, SP 51%) — Aya can read Chinese source directly, judges on different basis.
+
+**Qwen2.5-32B** (job 12114808, judgments_qwen32b.csv):
+Strongest and most decisive. Baseline wins clearly, especially opus-mt:
+| model | vs | A(baseline) | B(alt) | Equal |
+|-------|----|-------------|--------|-------|
+| NLLB  | morphemes | **42** | 18 | 39 |
+| NLLB  | SP | **48** | 16 | 35 |
+| opus-mt | morphemes | **47** | 3 | 50 |
+| opus-mt | SP | **48** | 4 | 48 |
+Mean adequacy NLLB SP: A=3.49, B=3.09
+
+**Interpretation:** Qwen32B (best judge) strongly corroborates COMET — baseline wins
+across the board, with opus-mt morphemes getting only 3/100 wins. The COMET finding
+holds under human-preference-style evaluation. Aya is the outlier; its Chinese reading
+ability likely shifts its criteria toward adequacy-from-source rather than
+adequacy-from-reference comparison.
+
 ### Next steps
 
-- [x] POS probing ✓
-- [x] v5 depth ablation ✓  
-- [x] Zh→Ja forgetting analysis ✓
-- [ ] Gloss injection results (job 12106948)
-- [ ] Human/LLM eval on 100-sentence subset
-- [ ] Commit + push all new code
-- [ ] Start paper draft
+- [ ] Add LLM eval table to paper (§Results or §Analysis)
+- [ ] Overleaf: upload updated main.tex (xelatex + TeX Gyre Termes fonts)

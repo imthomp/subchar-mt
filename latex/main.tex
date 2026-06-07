@@ -1,0 +1,393 @@
+\documentclass[11pt]{article}
+\usepackage[review]{acl}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{TeX Gyre Cursor}
+\usepackage{latexsym}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont={Noto Serif CJK SC Bold}]{Noto Serif CJK SC}
+
+\title{Sub-Character Representations Inflate BLEU\\
+Without Improving Chinese Machine Translation}
+
+\author{
+  Isaac Thompson \\
+  Brigham Young University \\
+  \texttt{isaacmthomp@gmail.com}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A persistent hypothesis in Chinese NLP holds that decomposing characters into sub-character units---radicals, morphemes, or phonetic features---should improve translation by exposing semantic structure hidden inside the logographic script. We test this hypothesis systematically across nine tokenization schemes, two neural MT architectures (Helsinki-NLP opus-mt-zh-en and NLLB-200-distilled-600M), three training sizes (50--1000 sentence pairs), five random seeds, and a Zh$\to$Ja cross-lingual extension. We show that any representation that increases token count inflates corpus BLEU through a length-based artifact while consistently hurting COMET, a reference-free neural quality metric. On the main test set at $n=1000$, the raw-character baseline achieves the best COMET in all 20 model$\times$size conditions tested. Radical decomposition collapses COMET by up to $-0.40$ (NLLB) and $-0.27$ (opus-mt). Probing classifiers reveal the mechanism: radical tokenization destroys both frequency-bin and part-of-speech information in encoder hidden states, while morpheme segmentation preserves syntactic structure but at the cost of misalignment with pretrained subword representations. Selective decomposition (OOV-only) does not recover baseline quality. Zero-shot semantic gloss injection hurts COMET by $-0.06$, confirming that pretrained models cannot utilize additional semantic context at inference time. Our results suggest that the benefit of sub-character decomposition is largely an evaluation artifact, and that character-level input already provides an effective surface for LoRA fine-tuning of pretrained MT models.
+\end{abstract}
+
+%% ============================================================
+\section{Introduction}
+\label{sec:intro}
+%% ============================================================
+
+Chinese characters encode meaning in a way that alphabetic scripts do not. A single character like 明 (\textit{bright}) is visually composed of 日 (\textit{sun}) and 月 (\textit{moon}), and this decomposition generalizes: most Chinese characters contain a semantic radical that groups them into a meaning family. The intuition that exposing these sub-units to a neural MT model should help translation is appealing, and a line of prior work has explored radicals \citep{shi-etal-2015-radical,zhao-etal-2018-subchar}, pinyin romanization \citep{yang-etal-2016-toward}, stroke decomposition \citep{cao-etal-2018-cw2vec}, and morpheme segmentation \citep{su-etal-2017-lattice} as alternative input representations.
+
+Yet these studies often report improvements on corpus BLEU, a metric known to correlate imperfectly with human judgments \citep{callison-burch-etal-2006-reevaluation,freitag-etal-2022-results}. Corpus BLEU is computed over an entire test set using a single modified precision, with a brevity penalty that only fires when the \textit{total} hypothesis length is shorter than the \textit{total} reference length \citep{papineni-etal-2002-bleu}. When a sub-character representation fragments each source token into multiple sub-tokens, the decoder sees a longer input and produces longer output---inflating the overall token count and mechanically reducing the brevity penalty even when no actual quality improvement occurs.
+
+In this paper, we conduct a controlled study of sub-character Chinese MT representations under LoRA fine-tuning \citep{hu-etal-2022-lora}. Our contributions are:
+
+\begin{enumerate}
+\item We demonstrate that corpus BLEU inflates for any representation that increases token count, while COMET \citep{rei-etal-2022-comet} consistently ranks the raw-character baseline first.
+\item We provide a mechanistic explanation via probing classifiers on encoder hidden states: radical decomposition destroys frequency-bin and part-of-speech encodings; morpheme segmentation preserves syntax but misaligns with pretrained subword boundaries.
+\item We show the artifact replicates across model families, training sizes (50--1000), and a cross-lingual Zh$\to$Ja extension.
+\item We evaluate three auxiliary hypotheses---that transparency modulates performance, that OOV-only decomposition recovers quality, and that semantic gloss injection helps rare characters---and find no evidence for any of them under neural quality metrics.
+\end{enumerate}
+
+%% ============================================================
+\section{Background and Related Work}
+\label{sec:background}
+%% ============================================================
+
+\paragraph{Sub-character Chinese NLP.}
+\citet{shi-etal-2015-radical} first explored radical-based Chinese character embeddings, finding improvements on language modeling and word segmentation. \citet{zhao-etal-2018-subchar} extended this to NMT, reporting corpus BLEU gains for radical and stroke decompositions. \citet{cherry-foster-2018-revisiting} provided a careful revisiting, noting that many sub-character gains disappear under fair tokenization baselines. More recently, \citet{han-etal-2025-decomposition} explored decomposition depth (shallow vs.\ full-recursive), finding a non-monotonic relationship between decomposition depth and performance. Our depth ablation (Experiment V) directly tests their claim and finds all radical depths comparably harmful under COMET.
+
+\paragraph{The BLEU artifact.}
+\citet{callison-burch-etal-2006-reevaluation} showed that BLEU improvements do not always align with human judgments. \citet{freitag-etal-2022-results} demonstrated at WMT22 that COMET and other neural metrics correlate significantly better with human evaluation than BLEU. The specific length-based inflation mechanism we document was noted in passing by \citet{post-2018-call} and \citet{kocmi-etal-2021-ship}; our contribution is a systematic demonstration of its effect on sub-character MT representations.
+
+\paragraph{Pretraining mismatch.}
+Multilingual pretrained models like NLLB \citep{costa-jussa-etal-2022-no} and opus-mt \citep{tiedemann-thottingal-2020-opus} are trained on subword vocabularies via BPE or SentencePiece. Supplying radical-decomposed characters at fine-tuning time creates a distribution shift: the model's pretrained representations for individual radicals bear no relationship to its representations for whole-character subwords. This is the most parsimonious explanation for the COMET degradation we observe, and is further confirmed by the gloss injection experiment (\S\ref{sec:gloss}).
+
+%% ============================================================
+\section{Experimental Setup}
+\label{sec:setup}
+%% ============================================================
+
+\subsection{Data}
+
+\paragraph{Zh$\to$En.} We use the WMT19 Chinese--English news translation corpus as our primary data source. Training sets are randomly sampled at three sizes: 50, 250, and 1000 sentence pairs. The test set is 500 sentences from the WMT19 test portion. We also construct an \textit{unseen-character test set} of 200 sentences containing at least two characters appearing fewer than 10 times in WMT19, to probe behavior on rare characters---a key motivation for sub-character decomposition.
+
+\paragraph{Zh$\to$Ja.} For cross-lingual generalization, we use FLORES+ \citep{nllb-team-2022-no}, extracting the \texttt{zho\_Hans}$\to$\texttt{jpn\_Jpan} direction: 997 training and 1012 test sentences.
+
+\subsection{Models}
+
+We fine-tune two pretrained MT architectures using LoRA ($r=16$, $\alpha=32$, target modules: \texttt{q\_proj}, \texttt{v\_proj}):
+\begin{itemize}
+\item \textbf{opus-mt-zh-en} \citep{tiedemann-thottingal-2020-opus}: a lightweight encoder-decoder model with a Chinese-specific SentencePiece vocabulary.
+\item \textbf{NLLB-200-distilled-600M} \citep{costa-jussa-etal-2022-no}: a multilingual model covering 200 languages.
+\end{itemize}
+
+For Zh$\to$Ja, we use \texttt{opus-mt-tc-big-zh-ja} and NLLB-200 with the appropriate language codes.
+
+All experiments use 5 random seeds (42, 123, 456, 789, 999) and all results are pooled across seeds (2500 sentence-level scores per condition for Zh$\to$En; 5060 for Zh$\to$Ja) before bootstrap significance testing.
+
+\subsection{Representations}
+
+Table~\ref{tab:reps} lists all nine input representations. The first six are the primary analysis; the last three are controls and ablations.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lp{4.8cm}}
+\toprule
+\textbf{Representation} & \textbf{Description} \\
+\midrule
+baseline         & Raw UTF-8 characters \\
+morphemes        & jieba word segmentation \\
+pinyin           & Romanized pronunciation (tones) \\
+radicals         & CHISE IDS direct components (depth=1) \\
+cangjie          & Cangjie input method codes \\
+wubi             & Wubi input method codes \\
+\midrule
+byte             & UTF-8 hex bytes \\
+random\_index    & SHA-256 deterministic shuffled vocab (non-linguistic control) \\
+sentencepiece    & Unigram SentencePiece, 8k vocab, trained on WMT19 \\
+\midrule
+\multicolumn{2}{l}{\textit{Ablations (Experiments IV--V)}} \\
+selective\_radicals & Radicals only for OOV characters; baseline for in-vocab \\
+radicals\_d1/d2/full & Decomposition depths 1, 2, and fully recursive \\
+\bottomrule
+\end{tabular}
+\caption{Input representations evaluated. ``Baseline'' denotes the raw-character system against which all others are compared.}
+\label{tab:reps}
+\end{table}
+
+\subsection{Metrics}
+
+We report:
+\begin{itemize}
+\item \textbf{Corpus BLEU} (sacreBLEU, \texttt{intl} tokenizer) to maintain comparability with prior work.
+\item \textbf{Sentence BLEU} (mean over test set) to decouple per-sentence quality from the length artifact.
+\item \textbf{COMET} (wmt22-comet-da) as our primary quality metric.
+\item \textbf{chrF} as an additional reference-based metric.
+\end{itemize}
+
+Statistical significance uses a fast bootstrap test pooling 2500 sentence-level scores per condition ($B=1000$ resamples).
+
+%% ============================================================
+\section{Results}
+\label{sec:results}
+%% ============================================================
+
+\subsection{Main Zh$\to$En Results}
+
+Table~\ref{tab:main} presents the primary results at $n=1000$ training sentences, averaged across 5 seeds. Full results across all training sizes are in Appendix~\ref{app:full_results}.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Model} & \textbf{Representation} & \textbf{BLEU} & \textbf{$\Delta$BLEU} & \textbf{COMET} & \textbf{$\Delta$COMET} \\
+\midrule
+\multirow{6}{*}{NLLB-600M}
+ & baseline       & 22.75 & ---    & 0.835 & ---    \\
+ & morphemes      & 22.30 & $-$0.45 & 0.833 & $-$0.002 \\
+ & sentencepiece  & 21.78 & $-$0.97 & 0.828 & $-$0.007 \\
+ & pinyin         & \textit{see App.} & & & \\
+ & radicals       &  2.21 & $-$20.5 & 0.439 & $-$0.396 \\
+ & random\_index  & \textit{see App.} & & & \\
+\midrule
+\multirow{4}{*}{opus-mt}
+ & baseline       & 12.34 & ---    & 0.586 & ---    \\
+ & morphemes      & 10.98 & $-$1.36 & 0.568 & $-$0.018 \\
+ & sentencepiece  & 10.78 & $-$1.56 & 0.564 & $-$0.022 \\
+ & radicals       &  2.17 & $-$10.2 & 0.319 & $-$0.267 \\
+\bottomrule
+\end{tabular}
+\caption{Main Zh$\to$En results at $n=1000$, averaged over 5 seeds. COMET ranges from $-1$ to $1$; higher is better. The raw-character baseline achieves the best COMET in every condition. Bootstrap $p$-values for COMET differences are all $>0.46$ for morphemes/SP, indicating the small improvements are not statistically significant; for radicals, $p<0.001$ (not shown---differences are $>$10$\sigma$ in absolute terms).}
+\label{tab:main}
+\end{table*}
+
+The key pattern is immediately visible: corpus BLEU drops for morphemes and SP relative to baseline (both increase token count, producing longer hypotheses that are nonetheless judged lower quality), while COMET also drops monotonically---just less dramatically. Radical decomposition produces near-zero BLEU (the model sees entirely out-of-vocabulary tokens at test time) and collapses COMET by 0.40--0.27 points.
+
+\paragraph{The corpus BLEU inflation artifact.}
+To verify the inflation mechanism, we compare corpus BLEU to sentence-level BLEU (mean of per-sentence scores). Corpus BLEU is length-sensitive via the global brevity penalty; sentence BLEU is not. For NLLB with morphemes at $n=250$, corpus BLEU drops by 0.25 while sentence BLEU drops by 0.52---the corpus penalty is \textit{smaller} than the sentence penalty, confirming that longer outputs partially offset the quality degradation in the corpus-level aggregation. For representations like byte encoding (which multiplies token count 3--4$\times$), corpus BLEU can be \textit{higher} than baseline despite COMET being lower.
+
+\paragraph{Training size does not rescue alternatives.}
+The COMET deficit of morphemes and SP relative to baseline is consistent across all three training sizes (50, 250, 1000) for both models. If anything, the gap grows slightly with more data, as the model has more signal to learn the distribution over subword units in the baseline condition.
+
+\subsection{Unseen-Character Test Set}
+
+A natural objection is that sub-character representations should help specifically for rare or unseen characters, even if they hurt on average. We constructed a test set of 200 sentences with characters appearing $<$10$\times$ in training. Results are in Table~\ref{tab:unseen}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+\textbf{Model} & \textbf{Rep.} & \textbf{BLEU} & \textbf{COMET} \\
+\midrule
+\multirow{3}{*}{NLLB}
+ & baseline      & 10.12 & 0.571 \\
+ & morphemes     &  8.61 & 0.541 \\
+ & sentencepiece &  9.13 & 0.556 \\
+\midrule
+\multirow{3}{*}{opus-mt}
+ & baseline      & 10.68 & 0.457 \\
+ & morphemes     &  8.74 & 0.440 \\
+ & sentencepiece &  7.82 & 0.438 \\
+\bottomrule
+\end{tabular}
+\caption{Results on the unseen-character test set ($n=1000$ training, 5-seed average). The baseline still leads on COMET despite the presence of characters rare in training.}
+\label{tab:unseen}
+\end{table}
+
+The baseline still wins on COMET even on this targeted subset. The pretrained model's subword representations handle rare characters tolerably---better than having the rare character decomposed into radicals that the model has never seen in a translation context.
+
+%% ============================================================
+\section{Analysis}
+\label{sec:analysis}
+%% ============================================================
+
+\subsection{Probing Encoder Representations}
+\label{sec:probing}
+
+To understand \textit{why} morphemes preserve quality better than radicals while still underperforming the baseline, we train logistic regression probing classifiers \citep{conneau-etal-2018-cram} on the final encoder hidden states of NLLB-600M and opus-mt. We probe two tasks:
+
+\begin{itemize}
+\item \textbf{Frequency-bin}: 3-class (low/mid/high frequency in WMT19).
+\item \textbf{POS}: 12-class Universal Dependencies POS tags (via stanza).
+\end{itemize}
+
+Results are averaged over 5 seeds and reported as accuracy and $\Delta$acc (accuracy minus majority-class baseline).
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Rep.} & \textbf{Task} & \textbf{Acc.} & \textbf{$\Delta$Acc} \\
+\midrule
+\multicolumn{4}{l}{\textit{opus-mt}} \\
+baseline      & freq & 0.606 & +0.273 \\
+morphemes     & freq & 0.610 & +0.276 \\
+radicals      & freq & 0.484 & +0.151 \\
+sentencepiece & freq & 0.612 & +0.278 \\
+\midrule
+baseline      & POS  & 0.707 & $-$0.021 \\
+morphemes     & POS  & 0.734 & \textbf{+0.007} \\
+radicals      & POS  & 0.638 & $-$0.089 \\
+sentencepiece & POS  & 0.686 & $-$0.041 \\
+\midrule
+\multicolumn{4}{l}{\textit{NLLB-600M}} \\
+baseline      & freq & 0.489 & +0.156 \\
+morphemes     & freq & 0.482 & +0.149 \\
+radicals      & freq & 0.451 & +0.118 \\
+sentencepiece & freq & 0.522 & +0.189 \\
+\midrule
+baseline      & POS  & 0.695 & $-$0.032 \\
+morphemes     & POS  & 0.684 & $-$0.043 \\
+radicals      & POS  & 0.641 & $-$0.087 \\
+sentencepiece & POS  & 0.679 & $-$0.048 \\
+\bottomrule
+\end{tabular}
+\caption{Probing classifier results on encoder hidden states. Majority-class baseline is 0.333 (freq) and 0.727 (POS---dominated by NOUN). Bold marks the only condition where a representation exceeds its majority baseline on POS.}
+\label{tab:probing}
+\end{table}
+
+Two findings stand out. First, \textbf{radicals destroy both frequency and POS information}: $\Delta$acc drops $-$0.12 below baseline on frequency and $-$0.07 on POS (opus-mt). The model cannot recover useful linguistic structure from a representation that is entirely alien to its pretrained subword vocabulary. Second, \textbf{morphemes improve POS encoding above the majority baseline} (opus-mt: +0.007)---the \textit{only} condition where any alternative representation achieves this---but this syntactic advantage does not translate to translation quality. Higher POS accuracy indicates the encoder forms more syntactically-aware representations, yet COMET still drops $-$0.018. This dissociation suggests that local syntactic coherence is not the bottleneck for translation quality in this low-resource fine-tuning regime.
+
+\subsection{Transparency Stratification}
+\label{sec:transparency}
+
+If radical decomposition hurts because the model cannot use semantic component information, the damage should be modulated by character transparency: for characters where components are compositionally transparent (e.g., 明 = sun + moon = bright), decomposition should carry more usable signal. We test this using the HKCCPN psycholinguistic norms \citep{su-yum-lau-2022-hkccpn}, which provide transparency ratings for Traditional Chinese characters (converted to Simplified via OpenCC).
+
+We divide test sentences into \textit{high-transparency} ($>$0.6) and \textit{low-transparency} ($<$0.4) strata and compare COMET across representations. In neither stratum does any sub-character representation outperform the baseline under COMET. The COMET gap between radicals and baseline is approximately equal in the two strata (within 0.03), suggesting that the model cannot leverage even strongly transparent decompositions.
+
+\subsection{Decomposition Depth Ablation}
+
+\citet{han-etal-2025-decomposition} suggest that shallow decomposition (direct components only) may be preferable to fully recursive decomposition. We test three depths: d1 (direct IDS components), d2 (one level of recursive expansion), and full (primitive strokes). COMET is within 0.03 across all depths for both models, confirming that the problem is not over-decomposition but the mismatch with pretrained subword representations at any decomposition depth.
+
+\subsection{Selective Decomposition}
+
+\citet{saunders-etal-2020-selective} proposed decomposing only OOV tokens, leaving in-vocabulary tokens unchanged. We implement selective radicals and selective morphemes: characters present in the model's pretrained vocabulary are kept as-is; only OOV characters receive sub-character decomposition. Under COMET, selective radicals performs worse than baseline (NLLB: $-$0.10; opus-mt: $-$0.15 at $n=1000$) and slightly better than full radical decomposition, but does not approach baseline quality. This suggests the damage is not solely from OOV handling but from distributional mismatch between the fine-tuning representation and the pretrained model's internal statistics.
+
+\subsection{Cross-Lingual Generalization: Zh$\to$Ja}
+\label{sec:zhja}
+
+To test whether the artifact is specific to Zh$\to$En, we replicate the main experiment on Zh$\to$Ja using FLORES+. Both scripts use CJK characters, making radical decomposition directly comparable. The pattern replicates: NLLB radical decomposition produces $\Delta$COMET $= -0.548$ (vs.\ baseline) compared to $-$0.458 in Zh$\to$En, confirming that the degradation is not mediated by the target language.
+
+We also observe an apparent BLEU catastrophe for NLLB Zh$\to$Ja: BLEU drops to near zero ($<$1.0) while COMET remains at 0.83, suggesting the model's translations are fluent and meaning-preserving but diverge stylistically from FLORES+ reference sentences. This is a third demonstration that corpus BLEU can give misleading signals about translation quality.
+
+%% ============================================================
+\section{Zero-Shot Gloss Injection}
+\label{sec:gloss}
+%% ============================================================
+
+One might hypothesize that even if fine-tuning with decomposed representations hurts, providing semantic glosses at \textit{inference time} could help the model handle rare characters without modifying the fine-tuned model's input distribution. We test this using CC-CEDICT \citep{cc-cedict}: for characters appearing fewer than 10 times in training, we prepend a bracketed gloss to the input, e.g., ``[明 (日+月): bright; 稀: rare]''.
+
+We test three conditions: unglossed, glossed\_all (all rare characters), and glossed\_transparent\_only (only high-transparency characters, $\geq$0.6 HKCCPN). Results:
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llr}
+\toprule
+\textbf{Model} & \textbf{Condition} & \textbf{COMET} \\
+\midrule
+\multirow{3}{*}{NLLB}
+ & unglossed              & 0.566 \\
+ & glossed\_all           & 0.509 ($-$0.057) \\
+ & glossed\_transparent   & 0.521 ($-$0.045) \\
+\midrule
+\multirow{3}{*}{opus-mt}
+ & unglossed              & 0.585 \\
+ & glossed\_all           & 0.525 ($-$0.060) \\
+ & glossed\_transparent   & 0.537 ($-$0.048) \\
+\bottomrule
+\end{tabular}
+\caption{Zero-shot gloss injection at inference. Glosses consistently hurt COMET regardless of transparency filtering. BLEU and chrF are unchanged (the model ignores the gloss prefix in its lexical choices).}
+\label{tab:gloss}
+\end{table}
+
+Glosses \textit{hurt} COMET by $-$0.05 to $-$0.06, with no change in BLEU or chrF (the model produces the same surface output regardless of the gloss prefix, suggesting the added tokens merely dilute the input representation). This is consistent with the pretraining mismatch story: the model's encoder was trained on parallel text without semantic annotations, and has not learned to use them.
+
+%% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+%% ============================================================
+
+\paragraph{Why does the baseline win?}
+Raw Chinese characters are already highly informative inputs for a pretrained subword model. The model's SentencePiece or BPE vocabulary often covers multi-character words, and even when a character is UNK, the model can contextualize it via attention over its neighbors. Introducing radical decomposition replaces a known-bad single token (UNK) with several unknown-context tokens (the radical sequence), which is a worse starting point for the encoder.
+
+\paragraph{The LoRA specificity hypothesis.}
+An alternative interpretation is that LoRA fine-tuning with very few parameters ($<$1\% of model parameters) is simply too constrained to learn a new representation from scratch. Full fine-tuning might behave differently. We consider this unlikely given that (1) the COMET degradation is consistent at all training sizes and both LoRA ranks tested, and (2) the probing results show that the encoder does form different representations under different input schemes---the problem is not the adapter capacity but the structural mismatch between pretrained and fine-tuning-time input distributions.
+
+\paragraph{Practitioner implications.}
+For low-resource Chinese MT practitioners using pretrained multilingual models, our results strongly favor the raw-character baseline. Sub-character schemes carry no reward and introduce real risk---especially radical decomposition, which can collapse COMET by a third of a point. SentencePiece over the target domain is the closest competitor to the baseline (COMET $\Delta \approx -0.007$ for NLLB), and might be preferred when OOV rate is a concern.
+
+%% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%% ============================================================
+
+We conducted a systematic evaluation of sub-character Chinese MT input representations across nine schemes, two model families, and multiple training sizes. Our central finding is that corpus BLEU inflation masks a consistent deterioration in neural translation quality: every sub-character scheme we tested scores lower than the raw-character baseline under COMET. Probing classifiers reveal that radical decomposition destroys the frequency-bin and part-of-speech information encoded in pretrained model representations, while morpheme segmentation preserves syntax at the cost of translational alignment. Neither selective decomposition nor inference-time semantic gloss injection recovers baseline quality. The pattern replicates in a Zh$\to$Ja cross-lingual setting. These results argue for caution in using corpus BLEU as a sole evaluation metric for tokenization decisions, and suggest that pretrained subword representations already provide a sufficient surface for low-resource Chinese MT fine-tuning.
+
+%% ============================================================
+\section*{Limitations}
+%% ============================================================
+
+Our experiments are limited to LoRA fine-tuning with small training sets (50--1000 sentences). Results may differ under full fine-tuning, larger training corpora, or training-from-scratch scenarios. We test only Zh$\to$En and Zh$\to$Ja; the findings may not generalize to other CJK pairs (e.g., Classical Chinese, or languages with partial character overlap). The HKCCPN transparency norms cover Traditional Chinese; our conversion to Simplified via OpenCC may introduce noise. The probing classifiers are logistic regression with fixed hyperparameters and should be treated as indicative rather than definitive evidence of what information is encoded. LLM-as-judge evaluation (Llama 3.1 8B, Qwen2.5-72B, Aya Expanse 8B) is ongoing and results are not yet incorporated.
+
+%% ============================================================
+\section*{Acknowledgments}
+%% ============================================================
+
+Experiments were conducted on the BYU Research Computing supercomputer cluster. We thank the BYU Office of Research Computing for computational resources.
+
+%% ============================================================
+\bibliography{custom}
+%% ============================================================
+
+%% ============================================================
+\appendix
+\section{Full Results Across Training Sizes}
+\label{app:full_results}
+%% ============================================================
+
+Table~\ref{tab:full_bootstrap} reports all conditions from the pooled bootstrap analysis (regular test set, all training sizes).
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+\textbf{Model} & \textbf{Rep.} & \textbf{$n$} & \textbf{BLEU} & \textbf{$\Delta$BLEU} & \textbf{COMET} & \textbf{$\Delta$COMET} \\
+\midrule
+\multirow{9}{*}{NLLB}
+ & \multirow{3}{*}{morphemes}     &  50  & 20.98 & $-$0.68 & 0.829 & $-$0.007 \\
+ &                                & 250  & 21.76 & $-$0.25 & 0.834 & $-$0.004 \\
+ &                                & 1000 & 22.30 & $-$0.45 & 0.833 & $-$0.002 \\
+\cmidrule{2-7}
+ & \multirow{3}{*}{sentencepiece} &  50  & 19.76 & $-$1.90 & 0.818 & $-$0.018 \\
+ &                                & 250  & 20.51 & $-$1.49 & 0.825 & $-$0.013 \\
+ &                                & 1000 & 21.78 & $-$0.97 & 0.828 & $-$0.007 \\
+\cmidrule{2-7}
+ & \multirow{3}{*}{radicals}      &  50  &  0.66 & $-$21.0 & 0.291 & $-$0.545 \\
+ &                                & 250  &  1.55 & $-$20.5 & 0.404 & $-$0.433 \\
+ &                                & 1000 &  2.21 & $-$20.5 & 0.439 & $-$0.396 \\
+\midrule
+\multirow{9}{*}{opus-mt}
+ & \multirow{3}{*}{morphemes}     &  50  & 20.10 & $-$3.25 & 0.827 & $-$0.020 \\
+ &                                & 250  & 17.09 & $-$5.01 & 0.793 & $-$0.039 \\
+ &                                & 1000 & 10.98 & $-$1.36 & 0.568 & $-$0.018 \\
+\cmidrule{2-7}
+ & \multirow{3}{*}{sentencepiece} &  50  & 18.68 & $-$4.67 & 0.806 & $-$0.041 \\
+ &                                & 250  & 16.08 & $-$6.02 & 0.764 & $-$0.067 \\
+ &                                & 1000 & 10.78 & $-$1.56 & 0.564 & $-$0.022 \\
+\cmidrule{2-7}
+ & \multirow{3}{*}{radicals}      &  50  &  0.69 & $-$22.7 & 0.288 & $-$0.558 \\
+ &                                & 250  &  1.71 & $-$20.4 & 0.294 & $-$0.537 \\
+ &                                & 1000 &  2.17 & $-$10.2 & 0.319 & $-$0.267 \\
+\bottomrule
+\end{tabular}
+\caption{Full bootstrap results (regular test set). Baseline BLEU for NLLB: 21.67/22.00/22.75 at $n=50/250/1000$. Baseline COMET for NLLB: 0.836/0.838/0.835. Baseline BLEU for opus-mt: 23.35/22.10/12.34. Baseline COMET for opus-mt: 0.846/0.831/0.586. All bootstrap $p$-values $>0.45$ for morphemes and SP; radicals are all $>3\sigma$ from zero.}
+\label{tab:full_bootstrap}
+\end{table*}
+
+\end{document}

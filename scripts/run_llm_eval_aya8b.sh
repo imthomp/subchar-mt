@@ -36,7 +36,8 @@ PYTHONPATH="$PROJECT_DIR/src" $PYTHON src/llm_eval.py \
     --preds_dir results/predictions_v3/ \
     --model_id CohereForAI/aya-expanse-8b \
     --n_sentences 100 \
-    --train_size 500 \
+    --train_size 1000 \
+    --out_name judgments_aya8b.csv \
     2>&1 | tee logs/llm_eval_aya8b.log
 
 echo "Done: $(date)"
