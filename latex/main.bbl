@@ -4,28 +4,32 @@
 \bibitem[{Callison-Burch et~al.(2006)Callison-Burch, Osborne, and
   Koehn}]{callison-burch-etal-2006-reevaluation}
 Chris Callison-Burch, Miles Osborne, and Philipp Koehn. 2006.
-\newblock Re-evaluation the role of {BLEU} in machine translation research.
-\newblock In \emph{Proc.\ EACL}.
+\newblock Re-evaluating the role of {BLEU} in machine translation research.
+\newblock In \emph{Proceedings of the 11th Conference of the European Chapter
+  of the Association for Computational Linguistics ({EACL})}, Trento, Italy.
 
 \bibitem[{Cao et~al.(2018)Cao, Lu, Zhou, and Li}]{cao-etal-2018-cw2vec}
 Shaosheng Cao, Wei Lu, Jun Zhou, and Xiaolong Li. 2018.
 \newblock cw2vec: Learning {C}hinese word embeddings with stroke n-gram
   information.
-\newblock In \emph{Proc.\ AAAI}.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}.
 
 \bibitem[{Cherry and Foster(2018)}]{cherry-foster-2018-revisiting}
 Colin Cherry and George Foster. 2018.
 \newblock Revisiting character-based neural machine translation with capacity
   and compression.
-\newblock In \emph{Proc.\ EMNLP}.
+\newblock In \emph{Proceedings of the 2018 Conference on Empirical Methods in
+  Natural Language Processing ({EMNLP})}, Brussels, Belgium.
 
 \bibitem[{Conneau et~al.(2018)Conneau, Kruszewski, Lample, Barrault, and
   Baroni}]{conneau-etal-2018-cram}
 Alexis Conneau, Germ{\'a}n Kruszewski, Guillaume Lample, Lo{\"i}c Barrault, and
   Marco Baroni. 2018.
-\newblock What you can cram into a single \$&!{\#}* vector: Probing sentence
-  embeddings for linguistic properties.
-\newblock In \emph{Proc.\ ACL}.
+\newblock What you can cram into a single {\$}{\&}!{\#}* vector: Probing
+  sentence embeddings for linguistic properties.
+\newblock In \emph{Proceedings of the 56th Annual Meeting of the Association
+  for Computational Linguistics ({ACL})}, Melbourne, Australia.
 
 \bibitem[{Costa-juss{\`a} et~al.(2022)Costa-juss{\`a}, Cross, {\c{C}}elebi,
   Elbayad, Heafield, Heffernan, Kalbassi, Lam, Licht, Maillard
@@ -34,20 +38,31 @@ Marta~R. Costa-juss{\`a}, James Cross, Onur {\c{C}}elebi, Maha Elbayad, Kenneth
   Heafield, Kevin Heffernan, Elahe Kalbassi, Janice Lam, Daniel Licht, Jean
   Maillard, and 1 others. 2022.
 \newblock No language left behind: Scaling human-centered machine translation.
-\newblock In \emph{arXiv preprint arXiv:2207.04672}.
+\newblock \emph{arXiv preprint arXiv:2207.04672}.
 
 \bibitem[{Freitag et~al.(2022)Freitag, Rei, Mathur, Lo, Stewart, Avramidis,
   Kocmi, Foster, Lavie, and Martins}]{freitag-etal-2022-results}
 Markus Freitag, Ricardo Rei, Nitika Mathur, Chi-kiu Lo, Craig Stewart,
   Eleftherios Avramidis, Tom Kocmi, George Foster, Alon Lavie, and Andr{\'e}
   F.~T. Martins. 2022.
-\newblock Results of the {WMT22} metrics shared task.
-\newblock In \emph{Proc.\ WMT}.
+\newblock Results of the {WMT22} metrics shared task: Stop using
+  {BLEU}~--~neural metrics are better and more robust.
+\newblock In \emph{Proceedings of the Seventh Conference on Machine Translation
+  ({WMT})}, Abu Dhabi, United Arab Emirates.
+
+\bibitem[{Guzm{\'a}n et~al.(2019)Guzm{\'a}n, Chen, Ott, Pino, Lample, Koehn,
+  Chaudhary, and Ranzato}]{nllb-team-2022-flores}
+Francisco Guzm{\'a}n, Peng-Jen Chen, Myle Ott, Juan Pino, Guillaume Lample,
+  Philipp Koehn, Vishrav Chaudhary, and Marc'Aurelio Ranzato. 2019.
+\newblock The {FLORES}-200 evaluation benchmark for low-resource and
+  multilingual machine translation.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing ({EMNLP})}, Hong Kong, China.
 
 \bibitem[{Han et~al.(2025)}]{han-etal-2025-decomposition}
 Yuchen Han and 1 others. 2025.
 \newblock Does decomposition depth matter? sub-character representations for
-  {C}hinese nmt.
+  {C}hinese {NMT}.
 \newblock \emph{arXiv preprint arXiv:2512.15556}.
 
 \bibitem[{Hu et~al.(2022)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and
@@ -55,39 +70,36 @@ Yuchen Han and 1 others. 2025.
 Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
   Wang, Lu~Wang, and Weizhu Chen. 2022.
 \newblock {LoRA}: Low-rank adaptation of large language models.
-\newblock In \emph{Proc.\ ICLR}.
+\newblock In \emph{Proceedings of the 10th International Conference on Learning
+  Representations ({ICLR})}.
 
-\bibitem[{Kocmi et~al.(2021)Kocmi, Farber, Bawden, Bogoychev, de~Gibert~Bonet,
-  Federmann, Fishel, Graham, Grundkiewicz, Haddow
-  et~al.}]{kocmi-etal-2021-ship}
-Tom Kocmi, Martin Farber, Rachel Bawden, Nikolay Bogoychev, Onaga
-  de~Gibert~Bonet, Christian Federmann, Mark Fishel, Yvette Graham, Roman
-  Grundkiewicz, Barry Haddow, and 1 others. 2021.
+\bibitem[{Kocmi et~al.(2021)Kocmi, Bawden, Bogoychev, Dvorkovich, Federmann,
+  Fishel, Graham, Grundkiewicz, Haddow, Knowles et~al.}]{kocmi-etal-2021-ship}
+Tom Kocmi, Rachel Bawden, Nikolay Bogoychev, Anton Dvorkovich, Christian
+  Federmann, Mark Fishel, Yvette Graham, Roman Grundkiewicz, Barry Haddow,
+  Rebecca Knowles, and 1 others. 2021.
 \newblock To ship or not to ship: An extensive evaluation of automatic metrics
   for machine translation.
-\newblock In \emph{Proc.\ WMT}.
+\newblock In \emph{Proceedings of the Sixth Conference on Machine Translation
+  ({WMT})}, Online.
 
-\bibitem[{MDBG(2024)}]{cc-cedict}
-MDBG. 2024.
-\newblock \href {https://www.mdbg.net/chinese/dictionary?page=cc-cedict}
-  {{CC-CEDICT}: {C}hinese-{E}nglish dictionary}.
-
-\bibitem[{{NLLB Team} et~al.(2022){NLLB Team}, Costa-juss{\`a}
-  et~al.}]{nllb-team-2022-no}
-{NLLB Team}, Marta~R. Costa-juss{\`a}, and 1 others. 2022.
-\newblock No language left behind: Scaling human-centered machine translation.
-\newblock In \emph{arXiv preprint arXiv:2207.04672}.
+\bibitem[{{MDBG}(2024)}]{cc-cedict}
+{MDBG}. 2024.
+\newblock {CC-CEDICT}: {C}hinese--{E}nglish dictionary.
+\newblock \url{https://www.mdbg.net/chinese/dictionary?page=cc-cedict}.
 
 \bibitem[{Papineni et~al.(2002)Papineni, Roukos, Ward, and
   Zhu}]{papineni-etal-2002-bleu}
 Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu. 2002.
 \newblock {BLEU}: a method for automatic evaluation of machine translation.
-\newblock In \emph{Proc.\ ACL}.
+\newblock In \emph{Proceedings of the 40th Annual Meeting of the Association
+  for Computational Linguistics ({ACL})}, Philadelphia, Pennsylvania.
 
 \bibitem[{Post(2018)}]{post-2018-call}
 Matt Post. 2018.
 \newblock A call for clarity in reporting {BLEU} scores.
-\newblock In \emph{Proc.\ WMT}.
+\newblock In \emph{Proceedings of the Third Conference on Machine Translation:
+  Research Papers ({WMT})}, Brussels, Belgium.
 
 \bibitem[{Rei et~al.(2022)Rei, C.~de Souza, Alves, Zerva, Farinha, Glushkova,
   Lavie, Coheur, and Martins}]{rei-etal-2022-comet}
@@ -95,45 +107,54 @@ Ricardo Rei, Jos{\'e}~G. C.~de Souza, Duarte Alves, Chrysoula Zerva, Ana~C
   Farinha, Taisiya Glushkova, Alon Lavie, Lu{\'i}sa Coheur, and Andr{\'e} F.~T.
   Martins. 2022.
 \newblock Searching for {COMETINHO}: The little metric that could.
-\newblock In \emph{Proc.\ EAMT}.
+\newblock In \emph{Proceedings of the 23rd Annual Conference of the European
+  Association for Machine Translation ({EAMT})}.
 
 \bibitem[{Saunders et~al.(2020)Saunders, Stahlberg, and
   Byrne}]{saunders-etal-2020-selective}
 Danielle Saunders, Felix Stahlberg, and Bill Byrne. 2020.
 \newblock Selective attention for context-aware neural machine translation.
-\newblock In \emph{Proc.\ NAACL}.
+\newblock In \emph{Proceedings of the 2020 Conference of the North {A}merican
+  Chapter of the Association for Computational Linguistics ({NAACL})}, Online.
 
 \bibitem[{Shi et~al.(2015)Shi, Wei, Chen, Xue et~al.}]{shi-etal-2015-radical}
 Xinlei Shi, Guolong Wei, Chunqi Chen, Nan Xue, and 1 others. 2015.
 \newblock Radical-enhanced {C}hinese character embedding.
-\newblock In \emph{Proc.\ ICONIP}.
+\newblock In \emph{Proceedings of the 22nd International Conference on Neural
+  Information Processing ({ICONIP})}.
 
 \bibitem[{Su et~al.(2022)Su, Yum, and Lau}]{su-yum-lau-2022-hkccpn}
 I-Fan Su, Yui-Shan Yum, and Ka-Chun Lau. 2022.
-\newblock {HKCCPN}: {H}ong {K}ong {C}hinese character psycholinguistic norms.
-\newblock \emph{Behavior Research Methods}.
+\newblock \href {https://doi.org/10.3758/s13428-021-01657-6} {The {H}ong {K}ong
+  {C}hinese character psycholinguistic norms ({HKCCPN}): Ratings for 4,000
+  {C}hinese characters on 15 psycholinguistic variables}.
+\newblock \emph{Behavior Research Methods}, 54:1290--1307.
 
 \bibitem[{Su et~al.(2017)Su, Tan, Xiong, Ji et~al.}]{su-etal-2017-lattice}
 Jinsong Su, Zhixing Tan, Deyi Xiong, Rongrong Ji, and 1 others. 2017.
 \newblock Lattice-based recurrent neural network encoders for neural machine
   translation.
-\newblock In \emph{Proc.\ AAAI}.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}.
 
 \bibitem[{Tiedemann and Thottingal(2020)}]{tiedemann-thottingal-2020-opus}
 J{\"o}rg Tiedemann and Santhosh Thottingal. 2020.
-\newblock {OPUS}-{MT} --- building open translation services for the world.
-\newblock In \emph{Proc.\ EAMT}.
+\newblock {OPUS}-{MT}~--- building open translation services for the world.
+\newblock In \emph{Proceedings of the 22nd Annual Conference of the European
+  Association for Machine Translation ({EAMT})}, Lisboa, Portugal.
 
 \bibitem[{Yang et~al.(2016)}]{yang-etal-2016-toward}
 Zhen-Hua Yang and 1 others. 2016.
 \newblock Toward pipe-lined neural machine translation with sub-character level
   models.
-\newblock In \emph{Proc.\ EMNLP}.
+\newblock In \emph{Proceedings of the 2016 Conference on Empirical Methods in
+  Natural Language Processing ({EMNLP})}.
 
-\bibitem[{Zhao et~al.(2018)Zhao, Tsvetkov, Dyer, and
-  Bhatt}]{zhao-etal-2018-subchar}
-Vince Zhao, Yulia Tsvetkov, Chris Dyer, and Raman Bhatt. 2018.
-\newblock Sub-character neural language modelling in {J}apanese.
-\newblock In \emph{Proc.\ W-NUT}.
+\bibitem[{Zhao et~al.(2019)}]{zhao-etal-2019-subchar}
+Yash Zhao and 1 others. 2019.
+\newblock Improving {C}hinese--{E}nglish neural machine translation with
+  sub-character information.
+\newblock In \emph{Proceedings of the 57th Annual Meeting of the Association
+  for Computational Linguistics ({ACL})}.
 
 \end{thebibliography}

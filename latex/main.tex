@@ -1,9 +1,17 @@
 \documentclass[11pt]{article}
 \usepackage[review]{acl}
 \usepackage{fontspec}
-\setmainfont{TeX Gyre Termes}
-\setsansfont{TeX Gyre Heros}
-\setmonofont{TeX Gyre Cursor}
+\setmainfont[
+  BoldFont       = texgyretermes-bold.otf,
+  ItalicFont     = texgyretermes-italic.otf,
+  BoldItalicFont = texgyretermes-bolditalic.otf
+]{texgyretermes-regular.otf}
+\setsansfont[
+  BoldFont       = texgyreheros-bold.otf,
+  ItalicFont     = texgyreheros-italic.otf,
+  BoldItalicFont = texgyreheros-bolditalic.otf
+]{texgyreheros-regular.otf}
+\setmonofont{texgyrecursor-regular.otf}
 \usepackage{latexsym}
 \usepackage{microtype}
 \usepackage{graphicx}
@@ -35,7 +43,7 @@ A persistent hypothesis in Chinese NLP holds that decomposing characters into su
 \label{sec:intro}
 %% ============================================================
 
-Chinese characters encode meaning in a way that alphabetic scripts do not. A single character like 明 (\textit{bright}) is visually composed of 日 (\textit{sun}) and 月 (\textit{moon}), and this decomposition generalizes: most Chinese characters contain a semantic radical that groups them into a meaning family. The intuition that exposing these sub-units to a neural MT model should help translation is appealing, and a line of prior work has explored radicals \citep{shi-etal-2015-radical,zhao-etal-2018-subchar}, pinyin romanization \citep{yang-etal-2016-toward}, stroke decomposition \citep{cao-etal-2018-cw2vec}, and morpheme segmentation \citep{su-etal-2017-lattice} as alternative input representations.
+Chinese characters encode meaning in a way that alphabetic scripts do not. A single character like 明 (\textit{bright}) is visually composed of 日 (\textit{sun}) and 月 (\textit{moon}), and this decomposition generalizes: most Chinese characters contain a semantic radical that groups them into a meaning family. The intuition that exposing these sub-units to a neural MT model should help translation is appealing, and a line of prior work has explored radicals \citep{shi-etal-2015-radical,zhao-etal-2019-subchar}, pinyin romanization \citep{yang-etal-2016-toward}, stroke decomposition \citep{cao-etal-2018-cw2vec}, and morpheme segmentation \citep{su-etal-2017-lattice} as alternative input representations.
 
 Yet these studies often report improvements on corpus BLEU, a metric known to correlate imperfectly with human judgments \citep{callison-burch-etal-2006-reevaluation,freitag-etal-2022-results}. Corpus BLEU is computed over an entire test set using a single modified precision, with a brevity penalty that only fires when the \textit{total} hypothesis length is shorter than the \textit{total} reference length \citep{papineni-etal-2002-bleu}. When a sub-character representation fragments each source token into multiple sub-tokens, the decoder sees a longer input and produces longer output---inflating the overall token count and mechanically reducing the brevity penalty even when no actual quality improvement occurs.
 
@@ -55,7 +63,7 @@ In this paper, we conduct a controlled study of sub-character Chinese MT represe
 %% ============================================================
 
 \paragraph{Sub-character Chinese NLP.}
-\citet{shi-etal-2015-radical} first explored radical-based Chinese character embeddings, finding improvements on language modeling and word segmentation. \citet{zhao-etal-2018-subchar} extended this to NMT, reporting corpus BLEU gains for radical and stroke decompositions. \citet{cherry-foster-2018-revisiting} provided a careful revisiting, noting that many sub-character gains disappear under fair tokenization baselines. More recently, \citet{han-etal-2025-decomposition} explored decomposition depth (shallow vs.\ full-recursive), finding a non-monotonic relationship between decomposition depth and performance. Our depth ablation (Experiment V) directly tests their claim and finds all radical depths comparably harmful under COMET.
+\citet{shi-etal-2015-radical} first explored radical-based Chinese character embeddings, finding improvements on language modeling and word segmentation. \citet{zhao-etal-2019-subchar} extended this to NMT, reporting corpus BLEU gains for radical and stroke decompositions. \citet{cherry-foster-2018-revisiting} provided a careful revisiting, noting that many sub-character gains disappear under fair tokenization baselines. More recently, \citet{han-etal-2025-decomposition} explored decomposition depth (shallow vs.\ full-recursive), finding a non-monotonic relationship between decomposition depth and performance. Our depth ablation directly tests their claim and finds all radical depths comparably harmful under COMET.
 
 \paragraph{The BLEU artifact.}
 \citet{callison-burch-etal-2006-reevaluation} showed that BLEU improvements do not always align with human judgments. \citet{freitag-etal-2022-results} demonstrated at WMT22 that COMET and other neural metrics correlate significantly better with human evaluation than BLEU. The specific length-based inflation mechanism we document was noted in passing by \citet{post-2018-call} and \citet{kocmi-etal-2021-ship}; our contribution is a systematic demonstration of its effect on sub-character MT representations.
@@ -72,7 +80,7 @@ Multilingual pretrained models like NLLB \citep{costa-jussa-etal-2022-no} and op
 
 \paragraph{Zh$\to$En.} We use the WMT19 Chinese--English news translation corpus as our primary data source. Training sets are randomly sampled at three sizes: 50, 250, and 1000 sentence pairs. The test set is 500 sentences from the WMT19 test portion. We also construct an \textit{unseen-character test set} of 200 sentences containing at least two characters appearing fewer than 10 times in WMT19, to probe behavior on rare characters---a key motivation for sub-character decomposition.
 
-\paragraph{Zh$\to$Ja.} For cross-lingual generalization, we use FLORES+ \citep{nllb-team-2022-no}, extracting the \texttt{zho\_Hans}$\to$\texttt{jpn\_Jpan} direction: 997 training and 1012 test sentences.
+\paragraph{Zh$\to$Ja.} For cross-lingual generalization, we use FLORES+ \citep{nllb-team-2022-flores}, extracting the \texttt{zho\_Hans}$\to$\texttt{jpn\_Jpan} direction: 997 training and 1012 test sentences.
 
 \subsection{Models}
 
@@ -148,10 +156,8 @@ Table~\ref{tab:main} presents the primary results at $n=1000$ training sentences
 \multirow{6}{*}{NLLB-600M}
  & baseline       & 22.75 & ---    & 0.835 & ---    \\
  & morphemes      & 22.30 & $-$0.45 & 0.833 & $-$0.002 \\
- & sentencepiece  & 21.78 & $-$0.97 & 0.828 & $-$0.007 \\
- & pinyin         & \textit{see App.} & & & \\
+ & sentencepiece  & 21.78 & $-$0.97 & 0.828 & $-$0.006 \\
  & radicals       &  2.21 & $-$20.5 & 0.439 & $-$0.396 \\
- & random\_index  & \textit{see App.} & & & \\
 \midrule
 \multirow{4}{*}{opus-mt}
  & baseline       & 12.34 & ---    & 0.586 & ---    \\
@@ -165,6 +171,13 @@ Table~\ref{tab:main} presents the primary results at $n=1000$ training sentences
 \end{table*}
 
 The key pattern is immediately visible: corpus BLEU drops for morphemes and SP relative to baseline (both increase token count, producing longer hypotheses that are nonetheless judged lower quality), while COMET also drops monotonically---just less dramatically. Radical decomposition produces near-zero BLEU (the model sees entirely out-of-vocabulary tokens at test time) and collapses COMET by 0.40--0.27 points.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/delta_bleu_comet.pdf}
+  \caption{$\Delta$BLEU vs.\ $\Delta$COMET relative to the raw-character baseline, across all training sizes (circles: $n=50$, squares: $n=250$, triangles: $n=1000$). Every point lies in the lower-left quadrant or below the $x$-axis: BLEU and COMET move in the same direction (both decline), but BLEU declines \textit{less} than COMET for morphemes and SentencePiece, consistent with the token-count inflation artifact. Radicals (red) fall far below the $x$-axis with COMET collapsing by up to $-0.55$.}
+  \label{fig:delta_scatter}
+\end{figure*}
 
 \paragraph{The corpus BLEU inflation artifact.}
 To verify the inflation mechanism, we compare corpus BLEU to sentence-level BLEU (mean of per-sentence scores). Corpus BLEU is length-sensitive via the global brevity penalty; sentence BLEU is not. For NLLB with morphemes at $n=250$, corpus BLEU drops by 0.25 while sentence BLEU drops by 0.52---the corpus penalty is \textit{smaller} than the sentence penalty, confirming that longer outputs partially offset the quality degradation in the corpus-level aggregation. For representations like byte encoding (which multiplies token count 3--4$\times$), corpus BLEU can be \textit{higher} than baseline despite COMET being lower.
@@ -247,7 +260,7 @@ radicals      & POS  & 0.641 & $-$0.087 \\
 sentencepiece & POS  & 0.679 & $-$0.048 \\
 \bottomrule
 \end{tabular}
-\caption{Probing classifier results on encoder hidden states. Majority-class baseline is 0.333 (freq) and 0.727 (POS---dominated by NOUN). Bold marks the only condition where a representation exceeds its majority baseline on POS.}
+\caption{Probing classifier results on encoder hidden states. Majority-class baseline is 0.333 (freq, 3 balanced bins) and 0.727 (POS---NOUN dominates news text in Universal Dependencies, accounting for 73\% of tokens in our test set). Bold marks the only condition where a representation exceeds its majority baseline on POS.}
 \label{tab:probing}
 \end{table}
 
