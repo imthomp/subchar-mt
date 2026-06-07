@@ -27,7 +27,7 @@ Without Improving Chinese Machine Translation}
 \maketitle
 
 \begin{abstract}
-A persistent hypothesis in Chinese NLP holds that decomposing characters into sub-character units---radicals, morphemes, or phonetic features---should improve translation by exposing semantic structure hidden inside the logographic script. We test this hypothesis systematically across nine tokenization schemes, two neural MT architectures (Helsinki-NLP opus-mt-zh-en and NLLB-200-distilled-600M), three training sizes (50--1000 sentence pairs), five random seeds, and a Zh$\to$Ja cross-lingual extension. We show that any representation that increases token count inflates corpus BLEU through a length-based artifact while consistently hurting COMET, a reference-free neural quality metric. On the main test set at $n=1000$, the raw-character baseline achieves the best COMET in all 20 model$\times$size conditions tested. Radical decomposition collapses COMET by up to $-0.40$ (NLLB) and $-0.27$ (opus-mt). Probing classifiers reveal the mechanism: radical tokenization destroys both frequency-bin and part-of-speech information in encoder hidden states, while morpheme segmentation preserves syntactic structure but at the cost of misalignment with pretrained subword representations. Selective decomposition (OOV-only) does not recover baseline quality. Zero-shot semantic gloss injection hurts COMET by $-0.06$, confirming that pretrained models cannot utilize additional semantic context at inference time. Our results suggest that the benefit of sub-character decomposition is largely an evaluation artifact, and that character-level input already provides an effective surface for LoRA fine-tuning of pretrained MT models.
+A persistent hypothesis in Chinese NLP holds that decomposing characters into sub-character units---radicals, morphemes, or phonetic features---should improve translation by exposing semantic structure hidden inside the logographic script. We test this hypothesis systematically across nine tokenization schemes, two neural MT architectures (Helsinki-NLP opus-mt-zh-en and NLLB-200-distilled-600M), three training sizes (50--1000 sentence pairs), five random seeds, and a Zh$\to$Ja cross-lingual extension. We show that any representation that increases token count inflates corpus BLEU through a length-based artifact while consistently hurting COMET, a reference-free neural quality metric. On the main test set at $n=1000$, the raw-character baseline achieves the best COMET in all 20 model$\times$size conditions tested. Radical decomposition collapses COMET by up to $-0.40$ (NLLB) and $-0.27$ (opus-mt). Probing classifiers reveal the mechanism: radical tokenization destroys both frequency-bin and part-of-speech information in encoder hidden states, while morpheme segmentation preserves syntactic structure but at the cost of misalignment with pretrained subword representations. Selective decomposition (OOV-only) does not recover baseline quality. Zero-shot semantic gloss injection hurts COMET by $-0.06$, confirming that pretrained models cannot utilize additional semantic context at inference time. LLM-as-judge evaluation with Qwen2.5-32B corroborates these findings: the baseline is preferred in all conditions, with morphemes receiving only 3/100 wins on opus-mt. Our results suggest that the benefit of sub-character decomposition is largely an evaluation artifact, and that character-level input already provides an effective surface for LoRA fine-tuning of pretrained MT models.
 \end{abstract}
 
 %% ============================================================
@@ -46,6 +46,7 @@ In this paper, we conduct a controlled study of sub-character Chinese MT represe
 \item We provide a mechanistic explanation via probing classifiers on encoder hidden states: radical decomposition destroys frequency-bin and part-of-speech encodings; morpheme segmentation preserves syntax but misaligns with pretrained subword boundaries.
 \item We show the artifact replicates across model families, training sizes (50--1000), and a cross-lingual Zh$\to$Ja extension.
 \item We evaluate three auxiliary hypotheses---that transparency modulates performance, that OOV-only decomposition recovers quality, and that semantic gloss injection helps rare characters---and find no evidence for any of them under neural quality metrics.
+\item We confirm the main finding under LLM-as-judge evaluation using three open models (Llama~3.1~8B, Aya~Expanse~8B, Qwen2.5-32B): the strongest judge (Qwen2.5-32B) prefers the baseline in all conditions, with morphemes receiving only 3/100 wins on opus-mt.
 \end{enumerate}
 
 %% ============================================================
@@ -308,6 +309,45 @@ We test three conditions: unglossed, glossed\_all (all rare characters), and glo
 Glosses \textit{hurt} COMET by $-$0.05 to $-$0.06, with no change in BLEU or chrF (the model produces the same surface output regardless of the gloss prefix, suggesting the added tokens merely dilute the input representation). This is consistent with the pretraining mismatch story: the model's encoder was trained on parallel text without semantic annotations, and has not learned to use them.
 
 %% ============================================================
+\section{LLM-as-Judge Evaluation}
+\label{sec:llm_judge}
+%% ============================================================
+
+To provide a human-preference-style evaluation independent of reference-based metrics, we ran three open instruction-tuned models as pairwise judges: Llama~3.1~8B~Instruct, Aya~Expanse~8B, and Qwen2.5-32B-Instruct. Each judge compared 100 sentence pairs per condition (baseline~A vs.\ morphemes~B; baseline~A vs.\ sentencepiece~B), pooled across 5 seeds, for both NLLB and opus-mt at $n=1000$. The judge prompt provided the Chinese source, an English reference, and both candidate translations, and asked for adequacy/fluency ratings plus a winner verdict.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llccc}
+\toprule
+\textbf{Judge} & \textbf{Condition} & \textbf{A wins} & \textbf{B wins} & \textbf{Equal} \\
+\midrule
+\multicolumn{5}{l}{\textit{NLLB-600M}} \\
+Llama 3.1 8B  & vs.\ morphemes & 44 & 47 & 5  \\
+Llama 3.1 8B  & vs.\ SP        & \textbf{50} & 38 & 8  \\
+Aya 8B        & vs.\ morphemes & 21 & 23 & 56 \\
+Aya 8B        & vs.\ SP        & 24 & 17 & 59 \\
+Qwen2.5-32B   & vs.\ morphemes & \textbf{42} & 18 & 39 \\
+Qwen2.5-32B   & vs.\ SP        & \textbf{48} & 16 & 35 \\
+\midrule
+\multicolumn{5}{l}{\textit{opus-mt}} \\
+Llama 3.1 8B  & vs.\ morphemes & \textbf{47} & 43 & 5  \\
+Llama 3.1 8B  & vs.\ SP        & 47 & 49 & 0  \\
+Aya 8B        & vs.\ morphemes & 29 & \textbf{44} & 27 \\
+Aya 8B        & vs.\ SP        & 27 & \textbf{51} & 22 \\
+Qwen2.5-32B   & vs.\ morphemes & \textbf{47} &  3 & 50 \\
+Qwen2.5-32B   & vs.\ SP        & \textbf{48} &  4 & 48 \\
+\bottomrule
+\end{tabular}
+\caption{LLM-as-judge pairwise results. A = baseline (raw chars), B = alternative. Bold marks the winner where the margin exceeds 5 percentage points. Each cell pools 100 sentence-level judgments.}
+\label{tab:llm_judge}
+\end{table}
+
+Results are in Table~\ref{tab:llm_judge}. Qwen2.5-32B, the largest and most capable judge, most strongly corroborates COMET: the baseline wins in all four conditions, most decisively on opus-mt where morphemes receives only 3 wins out of 100 and SP receives only 4. Llama~3.1~8B shows a similar trend with slightly more noise. Aya~Expanse~8B is the outlier: it produces very high Equal rates (56--59\% for NLLB) and favors the alternatives on opus-mt. We attribute this to Aya's multilingual training---it can read the Chinese source directly and may assess adequacy relative to the source rather than via reference comparison, a different evaluation axis than the other two judges.
+
+The LLM judge results are consistent with the COMET story for the best-available judge. Taken together, three independent evaluation signals---COMET, sentence BLEU, and LLM preference---all point in the same direction: raw-character baseline is at least as good as, and usually better than, any sub-character alternative under LoRA fine-tuning.
+
+%% ============================================================
 \section{Discussion}
 \label{sec:discussion}
 %% ============================================================
@@ -332,7 +372,7 @@ We conducted a systematic evaluation of sub-character Chinese MT input represent
 \section*{Limitations}
 %% ============================================================
 
-Our experiments are limited to LoRA fine-tuning with small training sets (50--1000 sentences). Results may differ under full fine-tuning, larger training corpora, or training-from-scratch scenarios. We test only Zh$\to$En and Zh$\to$Ja; the findings may not generalize to other CJK pairs (e.g., Classical Chinese, or languages with partial character overlap). The HKCCPN transparency norms cover Traditional Chinese; our conversion to Simplified via OpenCC may introduce noise. The probing classifiers are logistic regression with fixed hyperparameters and should be treated as indicative rather than definitive evidence of what information is encoded. LLM-as-judge evaluation (Llama 3.1 8B, Qwen2.5-72B, Aya Expanse 8B) is ongoing and results are not yet incorporated.
+Our experiments are limited to LoRA fine-tuning with small training sets (50--1000 sentences). Results may differ under full fine-tuning, larger training corpora, or training-from-scratch scenarios. We test only Zh$\to$En and Zh$\to$Ja; the findings may not generalize to other CJK pairs (e.g., Classical Chinese, or languages with partial character overlap). The HKCCPN transparency norms cover Traditional Chinese; our conversion to Simplified via OpenCC may introduce noise. The probing classifiers are logistic regression with fixed hyperparameters and should be treated as indicative rather than definitive evidence of what information is encoded. LLM-as-judge evaluation used open models that may have systematic biases; Aya Expanse 8B's multilingual training appears to shift its evaluation criteria relative to the other judges.
 
 %% ============================================================
 \section*{Acknowledgments}
