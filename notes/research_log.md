@@ -617,7 +617,97 @@ holds under human-preference-style evaluation. Aya is the outlier; its Chinese r
 ability likely shifts its criteria toward adequacy-from-source rather than
 adequacy-from-reference comparison.
 
-### Next steps
+---
 
-- [ ] Add LLM eval table to paper (§Results or §Analysis)
-- [ ] Overleaf: upload updated main.tex (xelatex + TeX Gyre Termes fonts)
+## Session — 2026-06-07 (paper polish and final draft)
+
+### LLM eval → paper
+
+Added §7 LLM-as-Judge Evaluation with full Table 5. Three independent evaluation signals
+(COMET, bootstrap significance, LLM preference) now all appear in the paper and all
+point in the same direction.
+
+### Paper polish pass (commits 2c2c447 → de4a2a2)
+
+**Numbers audit:** All values in Tables 1–5 verified against CSV results. One fix:
+NLLB SP ΔCOMET was listed as −0.007 in earlier draft; corrected to −0.006.
+
+**Figure generated:** `latex/figures/delta_bleu_comet.pdf` — scatter plot of ΔBLEU vs.
+ΔCOMET across all training sizes for morphemes, SP, and radicals. Every point in the
+lower-left quadrant or below the x-axis, making the artifact visually obvious.
+
+**Bibliography overhaul:**
+- Fixed wrong Saunders citation: was "Selective Attention for Context-aware NMT" (NAACL 2020);
+  corrected to "Inference-Only Sub-character Decomposition..." (WAT 2020, arXiv 2011.06523).
+- Added missing citations: chrF (Popović 2015), Llama 3 (Dubey 2024),
+  Aya Expanse (Üstün 2024), Qwen2.5 (Qwen Team 2025), sacreBLEU explicit.
+- Fixed Conneau et al. `&` → `{\&}` (BibTeX misplaced alignment tab error).
+
+**Table fixes:**
+- Fixed `\multirow{6}` → `\multirow{4}` for NLLB row (was vertically miscentered).
+- Bolded best COMET in main results table and unseen-character table.
+
+**Discussion §8 rewrites:**
+- "Why does the baseline win?" paragraph rewritten — removed the confused "UNK is
+  known-bad" logic; now explains pretraining mismatch mechanistically via probing evidence.
+- Zh→Ja catastrophic forgetting observation expanded to practitioner warning.
+- Aya Expanse outlier explanation softened to "we speculate."
+- Added note on why cangjie/wubi/pinyin/byte/random_index are omitted from main tables.
+
+**Open questions paragraph:** Added to §8 Discussion. Motivates two future directions:
+(1) augmenting character embeddings with HKCCPN psycholinguistic features before LoRA;
+(2) intermediate character-definition pretraining. Scoped specifically to semantically
+transparent rare characters where the motivation is strongest and gloss injection
+(already tested) failed.
+
+**Anonymization:** BYU and author name suppressed from Acknowledgments and author block
+for blind review. `[review]` option handles author block; Acknowledgments edited to
+"a university research computing cluster."
+
+**Pinyin added** to all Chinese characters in running text: 明 (míng), 日 (rì), 月 (yuè),
+氵(sān diǎn shuǐ), 河 (hé), 湖 (hú), 海 (hǎi), 木 (mù), 森 (sēn), plus inline
+transparency example.
+
+### Final title and idiom framing (commit de4a2a2)
+
+**Title:** *"Drawing Legs on a Snake: Sub-Character Representations Inflate BLEU Without
+Improving Chinese MT"*
+
+**Backup title** (commented out):
+*"Buying the Box, Returning the Pearl: Sub-Character Tokenization Inflates BLEU and
+Degrades Chinese MT Quality"*
+
+**画蛇添足 (huà shé tiān zú)** — "drawing legs on a snake" — introduced in abstract
+and developed in a full Introduction paragraph. Framing: sub-character decomposition is
+the legs; it doesn't belong and disqualifies the entry.
+
+**买椟还珠 (mǎi dú huán zhū)** — "buying the box, returning the pearl" — introduced in
+§4 Results at the BLEU artifact paragraph. Framing: BLEU is the box (can be counted),
+translation quality is the pearl (what you actually want). Optimizing BLEU = keeping the
+box and returning the pearl. Both idioms appear again in the Conclusion as bookends.
+
+### Background expansion
+
+Added two new paragraphs to §2 Background:
+- **Non-linguistic controls:** random_index (zero semantic signal) ≈ cangjie/wubi under COMET.
+  This corroborates Si et al. (TACL 2023) that benefit of sub-character encodings is
+  structural/efficiency, not semantic. Positions our paper relative to the key prior challenge.
+- **Pretraining mismatch vs. train-from-scratch:** Explicitly explains why gains found in
+  StrokeNet / Wubi-NMT (train-from-scratch) don't transfer to fine-tuning. The literature
+  contradiction is now addressed in the paper rather than left for reviewers to find.
+
+### Current state
+
+- **Compile:** 11 pages total (≈8 content + 2 refs + 1 appendix). Clean xelatex compile;
+  only error is expected Noto CJK font (present on Overleaf, absent on cluster).
+- **Git:** 5 commits this session, all pushed to `imthomp/subchar-mt.git` (main branch).
+  Latest: `de4a2a2`.
+
+### Remaining before submission
+
+- Upload `latex/main.tex` + `latex/figures/delta_bleu_comet.pdf` to Overleaf to verify
+  CJK font rendering and full typeset appearance.
+- Author read-through for voice and flow — paper was drafted/revised programmatically
+  and will benefit from a human pass, especially Introduction and §8 Discussion.
+- Venue decision: ARR June cycle (deadline ~June 15–17) is the nearest opportunity;
+  paper is essentially submission-ready pending the above.
