@@ -1,4 +1,4 @@
-\begin{thebibliography}{21}
+\begin{thebibliography}{25}
 \providecommand{\natexlab}[1]{#1}
 
 \bibitem[{Callison-Burch et~al.(2006)Callison-Burch, Osborne, and
@@ -39,6 +39,11 @@ Marta~R. Costa-juss{\`a}, James Cross, Onur {\c{C}}elebi, Maha Elbayad, Kenneth
   Maillard, and 1 others. 2022.
 \newblock No language left behind: Scaling human-centered machine translation.
 \newblock \emph{arXiv preprint arXiv:2207.04672}.
+
+\bibitem[{Dubey et~al.(2024)}]{dubey-etal-2024-llama3}
+Abhimanyu Dubey and 1 others. 2024.
+\newblock The {L}lama~3 herd of models.
+\newblock \emph{arXiv preprint arXiv:2407.21783}.
 
 \bibitem[{Freitag et~al.(2022)Freitag, Rei, Mathur, Lo, Stewart, Avramidis,
   Kocmi, Foster, Lavie, and Martins}]{freitag-etal-2022-results}
@@ -95,11 +100,22 @@ Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu. 2002.
 \newblock In \emph{Proceedings of the 40th Annual Meeting of the Association
   for Computational Linguistics ({ACL})}, Philadelphia, Pennsylvania.
 
+\bibitem[{Popovi{\'c}(2015)}]{popovic-2015-chrf}
+Maja Popovi{\'c}. 2015.
+\newblock {chrF}: character n-gram {F}-score for automatic {MT} evaluation.
+\newblock In \emph{Proceedings of the Tenth Workshop on Statistical Machine
+  Translation ({WMT})}, Lisbon, Portugal.
+
 \bibitem[{Post(2018)}]{post-2018-call}
 Matt Post. 2018.
 \newblock A call for clarity in reporting {BLEU} scores.
 \newblock In \emph{Proceedings of the Third Conference on Machine Translation:
   Research Papers ({WMT})}, Brussels, Belgium.
+
+\bibitem[{{Qwen Team}(2025)}]{qwen-team-2025-qwen25}
+{Qwen Team}. 2025.
+\newblock Qwen2.5 technical report.
+\newblock \emph{arXiv preprint arXiv:2412.15115}.
 
 \bibitem[{Rei et~al.(2022)Rei, C.~de Souza, Alves, Zerva, Farinha, Glushkova,
   Lavie, Coheur, and Martins}]{rei-etal-2022-comet}
@@ -143,6 +159,12 @@ J{\"o}rg Tiedemann and Santhosh Thottingal. 2020.
 \newblock {OPUS}-{MT}~--- building open translation services for the world.
 \newblock In \emph{Proceedings of the 22nd Annual Conference of the European
   Association for Machine Translation ({EAMT})}, Lisboa, Portugal.
+
+\bibitem[{{\"U}st{\"u}n et~al.(2024)}]{ustun-etal-2024-aya}
+Ahmet {\"U}st{\"u}n and 1 others. 2024.
+\newblock Aya expanse: Combining research breakthroughs for a new multilingual
+  frontier.
+\newblock \emph{arXiv preprint arXiv:2412.04261}.
 
 \bibitem[{Yang et~al.(2016)}]{yang-etal-2016-toward}
 Zhen-Hua Yang and 1 others. 2016.

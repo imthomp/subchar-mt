@@ -35,7 +35,7 @@ Without Improving Chinese Machine Translation}
 \maketitle
 
 \begin{abstract}
-A persistent hypothesis in Chinese NLP holds that decomposing characters into sub-character units---radicals, morphemes, or phonetic features---should improve translation by exposing semantic structure hidden inside the logographic script. We test this hypothesis systematically across nine tokenization schemes, two neural MT architectures (Helsinki-NLP opus-mt-zh-en and NLLB-200-distilled-600M), three training sizes (50--1000 sentence pairs), five random seeds, and a Zh$\to$Ja cross-lingual extension. We show that any representation that increases token count inflates corpus BLEU through a length-based artifact while consistently hurting COMET, a reference-free neural quality metric. On the main test set at $n=1000$, the raw-character baseline achieves the best COMET in all 20 model$\times$size conditions tested. Radical decomposition collapses COMET by up to $-0.40$ (NLLB) and $-0.27$ (opus-mt). Probing classifiers reveal the mechanism: radical tokenization destroys both frequency-bin and part-of-speech information in encoder hidden states, while morpheme segmentation preserves syntactic structure but at the cost of misalignment with pretrained subword representations. Selective decomposition (OOV-only) does not recover baseline quality. Zero-shot semantic gloss injection hurts COMET by $-0.06$, confirming that pretrained models cannot utilize additional semantic context at inference time. LLM-as-judge evaluation with Qwen2.5-32B corroborates these findings: the baseline is preferred in all conditions, with morphemes receiving only 3/100 wins on opus-mt. Our results suggest that the benefit of sub-character decomposition is largely an evaluation artifact, and that character-level input already provides an effective surface for LoRA fine-tuning of pretrained MT models.
+A persistent hypothesis in Chinese NLP holds that decomposing characters into sub-character units---radicals, morphemes, or phonetic features---should improve translation by exposing semantic structure hidden inside logographic script. We test this hypothesis across nine tokenization schemes, two pretrained MT models, and training sets of 50--1000 sentence pairs, evaluating with both corpus BLEU and COMET. We find that any representation increasing token count inflates corpus BLEU through a length-based artifact while consistently hurting COMET; the raw-character baseline achieves the best COMET in all 20 model$\times$size conditions. Probing classifiers on encoder hidden states reveal the mechanism: radical decomposition destroys the frequency and part-of-speech encodings present in pretrained representations, while morpheme segmentation preserves syntax but misaligns with pretrained subword boundaries. Neither selective decomposition, semantic gloss injection, nor a Zh$\to$Ja cross-lingual extension recovers baseline quality. LLM-as-judge evaluation with three open models corroborates these findings. Our results suggest that sub-character gains in Chinese MT are largely an evaluation artifact, and that raw characters already provide an effective surface for low-resource LoRA fine-tuning of pretrained MT models.
 \end{abstract}
 
 %% ============================================================
@@ -43,7 +43,7 @@ A persistent hypothesis in Chinese NLP holds that decomposing characters into su
 \label{sec:intro}
 %% ============================================================
 
-Chinese characters encode meaning in a way that alphabetic scripts do not. A single character like 明 (\textit{bright}) is visually composed of 日 (\textit{sun}) and 月 (\textit{moon}), and this decomposition generalizes: most Chinese characters contain a semantic radical that groups them into a meaning family. The intuition that exposing these sub-units to a neural MT model should help translation is appealing, and a line of prior work has explored radicals \citep{shi-etal-2015-radical,zhao-etal-2019-subchar}, pinyin romanization \citep{yang-etal-2016-toward}, stroke decomposition \citep{cao-etal-2018-cw2vec}, and morpheme segmentation \citep{su-etal-2017-lattice} as alternative input representations.
+Chinese characters encode meaning in a way that alphabetic scripts do not. A single character like 明 (\textit{míng}, ``bright'') is visually composed of 日 (\textit{rì}, ``sun'') and 月 (\textit{yuè}, ``moon''), and this decomposition generalizes: most Chinese characters contain a semantic radical that groups them into a meaning family---for example, the water radical 氵(\textit{sān diǎn shuǐ}) appears in 河 (\textit{hé}, ``river''), 湖 (\textit{hú}, ``lake''), and 海 (\textit{hǎi}, ``sea''). The intuition that exposing these sub-units to a neural MT model should help translation is appealing, and a line of prior work has explored radicals \citep{shi-etal-2015-radical,zhao-etal-2019-subchar}, pinyin romanization \citep{yang-etal-2016-toward}, stroke decomposition \citep{cao-etal-2018-cw2vec}, and morpheme segmentation \citep{su-etal-2017-lattice} as alternative input representations.
 
 Yet these studies often report improvements on corpus BLEU, a metric known to correlate imperfectly with human judgments \citep{callison-burch-etal-2006-reevaluation,freitag-etal-2022-results}. Corpus BLEU is computed over an entire test set using a single modified precision, with a brevity penalty that only fires when the \textit{total} hypothesis length is shorter than the \textit{total} reference length \citep{papineni-etal-2002-bleu}. When a sub-character representation fragments each source token into multiple sub-tokens, the decoder sees a longer input and produces longer output---inflating the overall token count and mechanically reducing the brevity penalty even when no actual quality improvement occurs.
 
@@ -54,7 +54,7 @@ In this paper, we conduct a controlled study of sub-character Chinese MT represe
 \item We provide a mechanistic explanation via probing classifiers on encoder hidden states: radical decomposition destroys frequency-bin and part-of-speech encodings; morpheme segmentation preserves syntax but misaligns with pretrained subword boundaries.
 \item We show the artifact replicates across model families, training sizes (50--1000), and a cross-lingual Zh$\to$Ja extension.
 \item We evaluate three auxiliary hypotheses---that transparency modulates performance, that OOV-only decomposition recovers quality, and that semantic gloss injection helps rare characters---and find no evidence for any of them under neural quality metrics.
-\item We confirm the main finding under LLM-as-judge evaluation using three open models (Llama~3.1~8B, Aya~Expanse~8B, Qwen2.5-32B): the strongest judge (Qwen2.5-32B) prefers the baseline in all conditions, with morphemes receiving only 3/100 wins on opus-mt.
+\item We confirm the main finding under LLM-as-judge evaluation \citep{dubey-etal-2024-llama3,ustun-etal-2024-aya,qwen-team-2025-qwen25} using three open models (Llama~3.1~8B, Aya~Expanse~8B, Qwen2.5-32B): the strongest judge (Qwen2.5-32B) prefers the baseline in all conditions, with morphemes receiving only 3/100 wins on opus-mt. Neither MT model in this study uses Qwen architecture; both are transformer encoder-decoders trained specifically for translation (opus-mt, NLLB-200).
 \end{enumerate}
 
 %% ============================================================
@@ -90,7 +90,7 @@ We fine-tune two pretrained MT architectures using LoRA ($r=16$, $\alpha=32$, ta
 \item \textbf{NLLB-200-distilled-600M} \citep{costa-jussa-etal-2022-no}: a multilingual model covering 200 languages.
 \end{itemize}
 
-For Zh$\to$Ja, we use \texttt{opus-mt-tc-big-zh-ja} and NLLB-200 with the appropriate language codes.
+For Zh$\to$Ja, we use Helsinki-NLP's \mbox{\texttt{opus-mt-tc-big-zh-ja}} and NLLB-200 with the \texttt{zho\_Hans}$\to$\texttt{jpn\_Jpan} language codes.
 
 All experiments use 5 random seeds (42, 123, 456, 789, 999) and all results are pooled across seeds (2500 sentence-level scores per condition for Zh$\to$En; 5060 for Zh$\to$Ja) before bootstrap significance testing.
 
@@ -129,10 +129,10 @@ radicals\_d1/d2/full & Decomposition depths 1, 2, and fully recursive \\
 
 We report:
 \begin{itemize}
-\item \textbf{Corpus BLEU} (sacreBLEU, \texttt{intl} tokenizer) to maintain comparability with prior work.
+\item \textbf{Corpus BLEU} \citep{papineni-etal-2002-bleu} via sacreBLEU \citep{post-2018-call} (\texttt{intl} tokenizer) to maintain comparability with prior work.
 \item \textbf{Sentence BLEU} (mean over test set) to decouple per-sentence quality from the length artifact.
-\item \textbf{COMET} (wmt22-comet-da) as our primary quality metric.
-\item \textbf{chrF} as an additional reference-based metric.
+\item \textbf{COMET} \citep{rei-etal-2022-comet} (wmt22-comet-da) as our primary quality metric.
+\item \textbf{chrF} \citep{popovic-2015-chrf} as an additional reference-based metric.
 \end{itemize}
 
 Statistical significance uses a fast bootstrap test pooling 2500 sentence-level scores per condition ($B=1000$ resamples).
@@ -153,14 +153,14 @@ Table~\ref{tab:main} presents the primary results at $n=1000$ training sentences
 \toprule
 \textbf{Model} & \textbf{Representation} & \textbf{BLEU} & \textbf{$\Delta$BLEU} & \textbf{COMET} & \textbf{$\Delta$COMET} \\
 \midrule
-\multirow{6}{*}{NLLB-600M}
- & baseline       & 22.75 & ---    & 0.835 & ---    \\
+\multirow{4}{*}{NLLB-600M}
+ & baseline       & 22.75 & ---    & \textbf{0.835} & ---    \\
  & morphemes      & 22.30 & $-$0.45 & 0.833 & $-$0.002 \\
  & sentencepiece  & 21.78 & $-$0.97 & 0.828 & $-$0.006 \\
  & radicals       &  2.21 & $-$20.5 & 0.439 & $-$0.396 \\
 \midrule
 \multirow{4}{*}{opus-mt}
- & baseline       & 12.34 & ---    & 0.586 & ---    \\
+ & baseline       & 12.34 & ---    & \textbf{0.586} & ---    \\
  & morphemes      & 10.98 & $-$1.36 & 0.568 & $-$0.018 \\
  & sentencepiece  & 10.78 & $-$1.56 & 0.564 & $-$0.022 \\
  & radicals       &  2.17 & $-$10.2 & 0.319 & $-$0.267 \\
@@ -197,12 +197,12 @@ A natural objection is that sub-character representations should help specifical
 \textbf{Model} & \textbf{Rep.} & \textbf{BLEU} & \textbf{COMET} \\
 \midrule
 \multirow{3}{*}{NLLB}
- & baseline      & 10.12 & 0.571 \\
+ & baseline      & 10.12 & \textbf{0.571} \\
  & morphemes     &  8.61 & 0.541 \\
  & sentencepiece &  9.13 & 0.556 \\
 \midrule
 \multirow{3}{*}{opus-mt}
- & baseline      & 10.68 & 0.457 \\
+ & baseline      & 10.68 & \textbf{0.457} \\
  & morphemes     &  8.74 & 0.440 \\
  & sentencepiece &  7.82 & 0.438 \\
 \bottomrule
@@ -269,7 +269,7 @@ Two findings stand out. First, \textbf{radicals destroy both frequency and POS i
 \subsection{Transparency Stratification}
 \label{sec:transparency}
 
-If radical decomposition hurts because the model cannot use semantic component information, the damage should be modulated by character transparency: for characters where components are compositionally transparent (e.g., 明 = sun + moon = bright), decomposition should carry more usable signal. We test this using the HKCCPN psycholinguistic norms \citep{su-yum-lau-2022-hkccpn}, which provide transparency ratings for Traditional Chinese characters (converted to Simplified via OpenCC).
+If radical decomposition hurts because the model cannot use semantic component information, the damage should be modulated by character transparency: for characters where components are compositionally transparent (e.g., 明 \textit{míng} = 日 \textit{rì} ``sun'' + 月 \textit{yuè} ``moon'' = ``bright''), decomposition should carry more usable signal. We test this using the HKCCPN psycholinguistic norms \citep{su-yum-lau-2022-hkccpn}, which provide transparency ratings for Traditional Chinese characters (converted to Simplified via OpenCC).
 
 We divide test sentences into \textit{high-transparency} ($>$0.6) and \textit{low-transparency} ($<$0.4) strata and compare COMET across representations. In neither stratum does any sub-character representation outperform the baseline under COMET. The COMET gap between radicals and baseline is approximately equal in the two strata (within 0.03), suggesting that the model cannot leverage even strongly transparent decompositions.
 
@@ -326,7 +326,7 @@ Glosses \textit{hurt} COMET by $-$0.05 to $-$0.06, with no change in BLEU or chr
 \label{sec:llm_judge}
 %% ============================================================
 
-To provide a human-preference-style evaluation independent of reference-based metrics, we ran three open instruction-tuned models as pairwise judges: Llama~3.1~8B~Instruct, Aya~Expanse~8B, and Qwen2.5-32B-Instruct. Each judge compared 100 sentence pairs per condition (baseline~A vs.\ morphemes~B; baseline~A vs.\ sentencepiece~B), pooled across 5 seeds, for both NLLB and opus-mt at $n=1000$. The judge prompt provided the Chinese source, an English reference, and both candidate translations, and asked for adequacy/fluency ratings plus a winner verdict.
+To provide a human-preference-style evaluation independent of reference-based metrics, we ran three open instruction-tuned models as pairwise judges: Llama~3.1~8B~Instruct \citep{dubey-etal-2024-llama3}, Aya~Expanse~8B \citep{ustun-etal-2024-aya}, and Qwen2.5-32B-Instruct \citep{qwen-team-2025-qwen25}. Each judge compared 100 sentence pairs per condition (baseline~A vs.\ morphemes~B; baseline~A vs.\ sentencepiece~B), pooled across 5 seeds, for both NLLB and opus-mt at $n=1000$. The judge prompt provided the Chinese source, an English reference, and both candidate translations, and asked for adequacy/fluency ratings plus a winner verdict.
 
 \begin{table}[t]
 \centering
@@ -394,7 +394,7 @@ Our experiments are limited to LoRA fine-tuning with small training sets (50--10
 \section*{Acknowledgments}
 %% ============================================================
 
-Experiments were conducted on the BYU Research Computing supercomputer cluster. We thank the BYU Office of Research Computing for computational resources.
+Experiments were conducted on a university research computing cluster. We thank the Office of Research Computing for computational resources.
 
 %% ============================================================
 \bibliography{custom}
