@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  7 JUN 2026 20:36
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  7 JUN 2026 21:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -736,32 +736,32 @@ Package fontspec Info: Font family 'NotoSerifCJKSC(0)' created for font 'Noto
 (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 38.
 LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 3
-4.
+8.
 
 (/vapps/rhel9/x86_64/texlive/2024/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 38.
+LaTeX Font Info:    ... okay on input line 38.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -800,7 +800,7 @@ LaTeX Font Info:    ... okay on input line 34.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 34.
+Package hyperref Info: Link coloring ON on input line 38.
 (./main.out) (./main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
@@ -811,73 +811,73 @@ Package fontspec Info: Adjusting the maths setup (use [no-math] to avoid
 
 \symlegacymaths=\mathgroup5
 LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 34.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 34.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 34.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 34.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 34.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 34.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 34.
-LaTeX Font Info:    Redeclaring math accent \check on input line 34.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 34.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 34.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 34.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 34.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 34.
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 38.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 38.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 38.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 38.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 38.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 38.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 38.
+LaTeX Font Info:    Redeclaring math accent \check on input line 38.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 38.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 38.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 38.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 38.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 38.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 34.
+(Font)              `operators' in the math version `normal' on input line 38.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  OT1/cmr/m/n --> TU/texgyretermes-regular.otf(0)/m/n on 
-input line 34.
+input line 38.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 34.
+(Font)              `operators' in the math version `bold' on input line 38.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  OT1/cmr/bx/n --> TU/texgyretermes-regular.otf(0)/m/n on
- input line 34.
+ input line 38.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  TU/texgyretermes-regular.otf(0)/m/n --> TU/texgyreterme
-s-regular.otf(0)/m/n on input line 34.
+s-regular.otf(0)/m/n on input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
 (Font)                  OT1/cmr/m/it --> TU/texgyretermes-regular.otf(0)/m/it o
-n input line 34.
+n input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
 (Font)                  OT1/cmr/bx/n --> TU/texgyretermes-regular.otf(0)/b/n on
- input line 34.
+ input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
 (Font)                  OT1/cmss/m/n --> TU/texgyreheros-regular.otf(0)/m/n on 
-input line 34.
+input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
 (Font)                  OT1/cmtt/m/n --> TU/texgyrecursor-regular.otf(0)/m/n on
- input line 34.
+ input line 38.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  TU/texgyretermes-regular.otf(0)/m/n --> TU/texgyreterme
-s-regular.otf(0)/b/n on input line 34.
+s-regular.otf(0)/b/n on input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
 (Font)                  OT1/cmr/bx/it --> TU/texgyretermes-regular.otf(0)/b/it 
-on input line 34.
+on input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
 (Font)                  OT1/cmss/bx/n --> TU/texgyreheros-regular.otf(0)/b/n on
- input line 34.
+ input line 38.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
 (Font)                  OT1/cmtt/m/n --> TU/texgyrecursor-regular.otf(0)/b/n on
- input line 34.
-LaTeX Info: Redefining \microtypecontext on input line 34.
-Package microtype Info: Applying patch `item' on input line 34.
-Package microtype Info: Applying patch `toc' on input line 34.
-Package microtype Info: Applying patch `eqnum' on input line 34.
-Package microtype Info: Applying patch `footnote' on input line 34.
-Package microtype Info: Applying patch `verbatim' on input line 34.
+ input line 38.
+LaTeX Info: Redefining \microtypecontext on input line 38.
+Package microtype Info: Applying patch `item' on input line 38.
+Package microtype Info: Applying patch `toc' on input line 38.
+Package microtype Info: Applying patch `eqnum' on input line 38.
+Package microtype Info: Applying patch `footnote' on input line 38.
+Package microtype Info: Applying patch `verbatim' on input line 38.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: No adjustment of tracking.
@@ -887,7 +887,7 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `texgyretermes-regular.otf' (encoding: TU).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-LaTeX Font Info:    Trying to load font information for U+lasy on input line 35
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 39
 .
 
 (/vapps/rhel9/x86_64/texlive/2024/texmf-dist/tex/latex/base/ulasy.fd
@@ -897,28 +897,37 @@ File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-Underfull \hbox (badness 6927) in paragraph at lines 38--39
-[]\TU/texgyretermes-regular.otf(0)/m/n/10 A persistent hypothesis in Chinese NL
-P
- []
+! Font TU/NotoSerifCJKSC(0)/m/n/10="Noto Serif CJK SC/OT" at 10.0pt not loadabl
+e: Metric (TFM) file or installed font not found.
+<to be read again> 
+                   relax 
+l.42 ... elaboration that ruins what it touches: 画
+                                                  蛇添足 (\textit{huà shé tiān ...
+I wasn't able to read the size data for this font,
+so I will ignore the font specification.
+[Wizards can fix TFM files using TFtoPL/PLtoTF.]
+You might try inserting a different font spec;
+e.g., type `I\font<same font id>=<substitute font name>'.
 
+Missing character: There is no 画 (U+753B) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 蛇 (U+86C7) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 添 (U+6DFB) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 足 (U+8DB3) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
 
-Underfull \hbox (badness 1755) in paragraph at lines 38--39
-\TU/texgyretermes-regular.otf(0)/m/n/10 gographic script. We test this hypothes
-is
- []
-
-
-Underfull \hbox (badness 1360) in paragraph at lines 38--39
-\TU/texgyretermes-regular.otf(0)/m/n/10 across nine tokenization schemes, two p
-re-
+Underfull \hbox (badness 1655) in paragraph at lines 42--43
+\TU/texgyretermes-regular.otf(0)/m/n/10 a length artifact while consistently hu
+rting
  []
 
 ! Font TU/NotoSerifCJKSC(0)/m/n/10.95="Noto Serif CJK SC/OT" at 10.95pt not loa
 dable: Metric (TFM) file or installed font not found.
 <to be read again> 
                    relax 
-l.46 ... scripts do not. A single character like 明
+l.50 ... scripts do not. A single character like 明
                                                    (\textit{míng}, ``bright'...
 I wasn't able to read the size data for this font,
 so I will ignore the font specification.
@@ -940,64 +949,92 @@ Missing character: There is no 湖 (U+6E56) in font [texgyretermes-regular.otf]/
 T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 海 (U+6D77) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
-
-Underfull \hbox (badness 1178) in paragraph at lines 54--55
-[]\TU/texgyretermes-regular.otf(0)/m/n/10.95 We provide a mechanistic explanati
-on via
- []
-
-
-Underfull \hbox (badness 3229) in paragraph at lines 54--55
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 and part-of-speech encodings; morphe
-me
- []
-
-
-Underfull \hbox (badness 2285) in paragraph at lines 55--56
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 families, training sizes (50–1000), 
-and a
- []
-
-
-Underfull \hbox (badness 2799) in paragraph at lines 56--57
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 transparency modulates performance, 
-that
- []
-
-
-Underfull \hbox (badness 2600) in paragraph at lines 56--57
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 OOV-only decomposition recovers qual
-ity,
- []
-
+Missing character: There is no 画 (U+753B) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 蛇 (U+86C7) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 添 (U+6DFB) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 足 (U+8DB3) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
 [1
 
 
 
 ]
-Underfull \hbox (badness 1939) in paragraph at lines 57--58
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 on opus-mt. Neither MT model in this
-
+Underfull \hbox (badness 1178) in paragraph at lines 60--61
+[]\TU/texgyretermes-regular.otf(0)/m/n/10.95 We provide a mechanistic explanati
+on via
  []
 
 
-Underfull \hbox (badness 4765) in paragraph at lines 66--67
+Underfull \hbox (badness 3229) in paragraph at lines 60--61
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 and part-of-speech encodings; morphe
+me
+ []
+
+
+Underfull \hbox (badness 2285) in paragraph at lines 61--62
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 families, training sizes (50–1000), 
+and a
+ []
+
+
+Underfull \hbox (badness 2799) in paragraph at lines 62--63
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 transparency modulates performance, 
+that
+ []
+
+
+Underfull \hbox (badness 2600) in paragraph at lines 62--63
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 OOV-only decomposition recovers qual
+ity,
+ []
+
+
+Underfull \hbox (badness 4765) in paragraph at lines 72--73
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 eling and word segmentation. [][]Zha
 o et al.[][]
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 69--70
+Underfull \hbox (badness 1558) in paragraph at lines 72--73
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 ders et al.[][] ([][]2020[][]) showe
+d that wholesale sub-
+ []
+
+
+Underfull \hbox (badness 1286) in paragraph at lines 72--73
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 translation; decomposing \TU/texgyre
+termes-regular.otf(0)/m/it/10.95 only \TU/texgyretermes-regular.otf(0)/m/n/10.9
+5 OOV characters
+ []
+
+
+Underfull \hbox (badness 1259) in paragraph at lines 75--76
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 profile is qualitatively identical t
+o cangjie and
+ []
+
+
+Underfull \hbox (badness 1052) in paragraph at lines 75--76
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 signal survives sub-character decomp
+osition re-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 The BLEU artifact.[] [][]\TU/texg
 yretermes-regular.otf(0)/m/n/10.95 Callison-Burch et al.[][]
  []
 
 
-Underfull \hbox (badness 1097) in paragraph at lines 69--70
+Underfull \hbox (badness 1097) in paragraph at lines 78--79
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 et al.[][] ([][]2021[][]); our contr
 ibution is a systematic
  []
 
+[2]
 
 Package xeCJK Warning: Unknown CJK family `\CJKttdefault' is being ignored.
 (xeCJK)                
@@ -1009,101 +1046,111 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-Underfull \hbox (badness 2726) in paragraph at lines 83--84
+Underfull \hbox (badness 2726) in paragraph at lines 92--93
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Zh$\OMS/cmsy/m/n/10.95 !$\TU/texg
 yretermes-regular.otf(0)/b/n/10.95 Ja.[] \TU/texgyretermes-regular.otf(0)/m/n/1
 0.95 For cross-lingual generalization, we
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 []\TU/texgyretermes-regular.otf(0)/b/n/10.95 NLLB-200-distilled-600M \TU/texgyr
 etermes-regular.otf(0)/m/n/10.95 ([][]Costa-jussà
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 93--94
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 []\TU/texgyretermes-regular.otf(0)/m/n/10.95 For Zh$\OMS/cmsy/m/n/10.95 !$\TU/t
 exgyretermes-regular.otf(0)/m/n/10.95 Ja, we use Helsinki-NLP’s
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 93--94
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 [] \TU/texgyretermes-regular.otf(0)/m/n/10.95 and NLLB-200
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 93--94
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 with the \TU/texgyrecursor-regular.o
 tf(0)/m/n/10.95 zho_Hans$\OMS/cmsy/m/n/10.95 !$\TU/texgyrecursor-regular.otf(0)
 /m/n/10.95 jpn_Jpan \TU/texgyretermes-regular.otf(0)/m/n/10.95 language
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 111--112
+Underfull \hbox (badness 10000) in paragraph at lines 120--121
 []\TU/texgyretermes-regular.otf(0)/m/n/9 CHISE IDS direct components
  []
 
 
-Underfull \hbox (badness 3965) in paragraph at lines 117--118
+Underfull \hbox (badness 3965) in paragraph at lines 126--127
 []\TU/texgyretermes-regular.otf(0)/m/n/9 Unigram SentencePiece, 8k vocab,
  []
 
 
-Underfull \hbox (badness 2818) in paragraph at lines 120--121
+Underfull \hbox (badness 2818) in paragraph at lines 129--130
 []\TU/texgyretermes-regular.otf(0)/m/n/9 Radicals only for OOV characters;
  []
 
 
-Overfull \hbox (9.4822pt too wide) in paragraph at lines 104--124
+Overfull \hbox (9.4822pt too wide) in paragraph at lines 113--133
  [][] 
  []
 
-[2]
-Underfull \hbox (badness 10000) in paragraph at lines 135--136
+
+Underfull \hbox (badness 10000) in paragraph at lines 144--145
 []\TU/texgyretermes-regular.otf(0)/b/n/10.95 chrF \TU/texgyretermes-regular.otf
 (0)/m/n/10.95 ([][]Popović[][], [][]2015[][]) as an additional
  []
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 145.
+(hyperref)                removing `math shift' on input line 154.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\to' on input line 145.
+(hyperref)                removing `\to' on input line 154.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 145.
+(hyperref)                removing `math shift' on input line 154.
 
 
-Underfull \hbox (badness 1184) in paragraph at lines 173--174
+Underfull \hbox (badness 1184) in paragraph at lines 182--183
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 pus BLEU drops for morphemes and SP 
 rela-
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 173--174
+Underfull \hbox (badness 2027) in paragraph at lines 182--183
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 ducing longer hypotheses that are no
 netheless
  []
 
 File: figures/delta_bleu_comet.pdf Graphic file (type pdf)
 <use figures/delta_bleu_comet.pdf>
-
-Underfull \hbox (badness 1867) in paragraph at lines 183--184
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 ify the inflation mechanism, we comp
-are cor-
+Missing character: There is no 买 (U+4E70) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 椟 (U+691F) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 还 (U+8FD8) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 珠 (U+73E0) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+[3]
+Underfull \hbox (badness 1400) in paragraph at lines 194--195
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 than baseline despite COMET being ma
+rkedly
  []
 
-[3]
-Underfull \hbox (badness 1043) in paragraph at lines 267--268
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4]
+Underfull \hbox (badness 1043) in paragraph at lines 278--279
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 drops $\OMS/cmsy/m/n/10.95 ^^@$\TU/t
 exgyretermes-regular.otf(0)/m/n/10.95 0.12 below baseline on frequency and
  []
 
-[4]
 Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 日 (U+65E5) in font [texgyretermes-regular.otf]/O
@@ -1111,38 +1158,37 @@ T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 月 (U+6708) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 
-Underfull \hbox (badness 1072) in paragraph at lines 274--275
+Underfull \hbox (badness 1072) in paragraph at lines 285--286
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 ($\OML/cmm/m/it/10.95 >$\TU/texgyret
 ermes-regular.otf(0)/m/n/10.95 0.6) and \TU/texgyretermes-regular.otf(0)/m/it/1
 0.95 low-transparency \TU/texgyretermes-regular.otf(0)/m/n/10.95 ($\OML/cmm/m/i
 t/10.95 <$\TU/texgyretermes-regular.otf(0)/m/n/10.95 0.4) strata and
  []
 
-
-Underfull \hbox (badness 1472) in paragraph at lines 282--283
+[5]
+Underfull \hbox (badness 1472) in paragraph at lines 293--294
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 OOV tokens, leaving in-vocabulary to
 kens un-
  []
 
 
-Underfull \hbox (badness 1365) in paragraph at lines 282--283
+Underfull \hbox (badness 1365) in paragraph at lines 293--294
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 sition. Under COMET, selective radic
 als per-
  []
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 284.
+(hyperref)                removing `math shift' on input line 295.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\to' on input line 284.
+(hyperref)                removing `\to' on input line 295.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 284.
+(hyperref)                removing `math shift' on input line 295.
 
-[5]
 Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 日 (U+65E5) in font [texgyretermes-regular.otf]/O
@@ -1152,56 +1198,60 @@ T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 稀 (U+7A00) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 
-Underfull \hbox (badness 1112) in paragraph at lines 298--299
+Underfull \hbox (badness 1112) in paragraph at lines 309--310
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 (only high-transparency characters, 
 $\OMS/cmsy/m/n/10.95 ^^U$\TU/texgyretermes-regular.otf(0)/m/n/10.95 0.6 HKC-
  []
 
-
-Overfull \hbox (20.81497pt too wide) in paragraph at lines 334--355
+[6]
+Overfull \hbox (20.81497pt too wide) in paragraph at lines 345--366
  [][] 
  []
+
+
+Underfull \vbox (badness 2717) has occurred while \output is active []
+
 
 Missing character: There is no 明 (U+660E) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 
-Underfull \hbox (badness 1205) in paragraph at lines 369--370
+Underfull \hbox (badness 1205) in paragraph at lines 380--381
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Why does the baseline win?[] \TU/
 texgyretermes-regular.otf(0)/m/n/10.95 Pretrained MT
  []
 
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 375--376
+
+Underfull \hbox (badness 10000) in paragraph at lines 386--387
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Practitioner implications.[] \TU/
 texgyretermes-regular.otf(0)/m/n/10.95 For low-resource
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 375--376
+Underfull \hbox (badness 10000) in paragraph at lines 386--387
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 Chinese MT practitioners using pretr
 ained
  []
 
 
-Underfull \hbox (badness 6412) in paragraph at lines 375--376
+Underfull \hbox (badness 6412) in paragraph at lines 386--387
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 multilingual models, our results str
 ongly fa-
  []
 
 
-Underfull \hbox (badness 1769) in paragraph at lines 375--376
+Underfull \hbox (badness 1769) in paragraph at lines 386--387
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 vor the raw-character baseline. Sub-
 character
  []
 
 
-Underfull \hbox (badness 4132) in paragraph at lines 375--376
+Underfull \hbox (badness 4132) in paragraph at lines 386--387
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 schemes carry no reward and introduc
 e real
  []
 
 
-Underfull \hbox (badness 4779) in paragraph at lines 375--376
+Underfull \hbox (badness 4779) in paragraph at lines 386--387
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 risk—especially radical decompositio
 n, which
  []
@@ -1211,109 +1261,95 @@ T:script=latn;language=dflt;mapping=tex-text;!
 Missing character: There is no 森 (U+68EE) in font [texgyretermes-regular.otf]/O
 T:script=latn;language=dflt;mapping=tex-text;!
 
-Underfull \hbox (badness 10000) in paragraph at lines 378--379
+Underfull \hbox (badness 10000) in paragraph at lines 389--390
  []\TU/texgyretermes-regular.otf(0)/b/n/10.95 Open questions: meaning-grounded 
 char-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 378--379
+Underfull \hbox (badness 10000) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/b/n/10.95 acter knowledge.[] \TU/texgyretermes
 -regular.otf(0)/m/n/10.95 Our results close one
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 378--379
+Underfull \hbox (badness 10000) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 specific intervention—input-level ch
 arac-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 378--379
+Underfull \hbox (badness 10000) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 ter decomposition—but leave open whe
 ther
  []
 
 
-Underfull \hbox (badness 2213) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 learning Chinese is not decompose ch
-aracters
+Underfull \hbox (badness 1199) in paragraph at lines 389--390
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 is tested here. Two directions follo
+w directly
  []
 
 
-Underfull \hbox (badness 2142) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 at the surface; they acquire explici
-t semantic
+Underfull \hbox (badness 4168) in paragraph at lines 389--390
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 interaction (§[][]5.2[][]) establish
+es that the current
  []
 
 
-Underfull \hbox (badness 1173) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 exploit the meaning signal in radica
-l structure
+Underfull \hbox (badness 2189) in paragraph at lines 389--390
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 encoder cannot exploit the meaning s
+ignal in
  []
 
 
-Underfull \hbox (badness 3989) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 even when it is present and composit
-ionally
- []
-
-
-Underfull \hbox (badness 3323) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 HKCCPN) before LoRA fine-tuning coul
-d in
- []
-
-
-Underfull \hbox (badness 1596) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 principle supply this signal without
- disrupting
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 378--379
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 the pretrained subword boundary stru
-cture.
- []
-
-
-Underfull \hbox (badness 2351) in paragraph at lines 378--379
+Underfull \hbox (badness 2351) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 definition prediction—using dictiona
 ry data to
  []
 
 
-Underfull \hbox (badness 1314) in paragraph at lines 378--379
+Underfull \hbox (badness 1314) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 targets alone. Both directions would
  need to
  []
 
 
-Underfull \hbox (badness 2744) in paragraph at lines 378--379
+Underfull \hbox (badness 2744) in paragraph at lines 389--390
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 demonstrate gains specifically on se
 mantically
  []
 
-
-Underfull \hbox (badness 1881) in paragraph at lines 385--386
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 We conducted a systematic evaluation
- of sub-
- []
-
-
-Underfull \hbox (badness 1383) in paragraph at lines 385--386
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 raw-character baseline under COMET. 
-Probing
- []
-
-
-Underfull \hbox (badness 1137) in paragraph at lines 385--386
-\TU/texgyretermes-regular.otf(0)/m/n/10.95 tions, while morpheme segmentation p
-reserves
- []
-
 [7]
-Underfull \hbox (badness 1189) in paragraph at lines 391--392
+Underfull \hbox (badness 1406) in paragraph at lines 396--397
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 as-judge preference, and bootstrap s
+ignificance
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 396--397
+\TU/texgyretermes-regular.otf(0)/m/n/10.95 resentation increasing token count r
+educes the
+ []
+
+Missing character: There is no 画 (U+753B) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 蛇 (U+86C7) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 添 (U+6DFB) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 足 (U+8DB3) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 买 (U+4E70) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 椟 (U+691F) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 还 (U+8FD8) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+Missing character: There is no 珠 (U+73E0) in font [texgyretermes-regular.otf]/O
+T:script=latn;language=dflt;mapping=tex-text;!
+
+Underfull \hbox (badness 1189) in paragraph at lines 404--405
 \TU/texgyretermes-regular.otf(0)/m/n/10.95 ing corpora, or training-from-scratc
 h scenarios.
  []
@@ -1324,7 +1360,7 @@ Underfull \hbox (badness 1960) in paragraph at lines 6--10
 and Philipp
  []
 
-
+[8]
 Underfull \hbox (badness 1796) in paragraph at lines 50--57
 []\TU/texgyretermes-regular.otf(0)/m/n/10 Markus Freitag, Ricardo Rei, Nitika M
 athur, Chi-
@@ -1336,7 +1372,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 60--66
 19.
  []
 
-[8]
+
 Underfull \hbox (badness 1715) in paragraph at lines 122--128
 []\TU/texgyretermes-regular.otf(0)/m/n/10 Ricardo Rei, José G. C. de Souza, Dua
 rte Alves,
@@ -1354,13 +1390,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 177--182
  sub-
  []
 
-)
+[9]) [10
 
-Package lineno Warning: Line number reference failed, re-run to get it right.
-
-[9
-
-] [10] (./main.aux)
+] [11] (./main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2022/08/05>
@@ -1369,12 +1401,12 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D97C8D70BF4084474048303E088DA060;3094.
  ) 
 Here is how much of TeX's memory you used:
- 18004 strings out of 474761
- 370473 string characters out of 5755729
- 1964145 words of memory out of 5000000
- 39928 multiletter control sequences out of 15000+600000
+ 18009 strings out of 474761
+ 370550 string characters out of 5755729
+ 1965145 words of memory out of 5000000
+ 39933 multiletter control sequences out of 15000+600000
  566799 words of font info for 104 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 84i,11n,93p,1765b,541s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,11n,93p,1794b,559s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on main.pdf (10 pages).
+Output written on main.pdf (11 pages).
